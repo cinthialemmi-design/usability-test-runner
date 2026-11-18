@@ -1,0 +1,4 @@
+interface:
+  display_name: "Teste de usabilidade mobile"
+  short_description: "Testes HTML no celular com mapas, replay e resultados"
+  default_prompt: "Use $usability-test-runner para criar um teste do meu protótipo HTML no celular, com tarefas, critérios configuráveis, coleta, mapas de cliques e replay visual."

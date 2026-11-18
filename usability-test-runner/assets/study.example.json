@@ -1,0 +1,212 @@
+{
+  "schemaVersion": "2",
+  "exampleOnly": true,
+  "studyId": "rooms-example",
+  "studyRevision": "1",
+  "prototypeRevision": "rooms-demo-1",
+  "title": "Reserva de salas — configuração fictícia",
+  "locale": "pt-BR",
+  "researchObjective": "Observar a reserva de um espaço e a compreensão da confirmação.",
+  "decisionToSupport": "Revisar a navegação e a confirmação da reserva.",
+  "audience": "A definir no estudo real",
+  "device": "mobile",
+  "collectionMode": "preview",
+  "environment": "pilot",
+  "collectorEndpoint": null,
+  "brand": {
+    "source": "prototype",
+    "bundleId": "example-brand-v1",
+    "assetManifest": "prototype/assets.manifest.json"
+  },
+  "prototype": {
+    "rootSelector": "#prototype",
+    "adapter": "prototype/adapter.js",
+    "screens": [
+      {
+        "screenId": "rooms",
+        "label": "Salas disponíveis"
+      },
+      {
+        "screenId": "room-details",
+        "label": "Detalhes da sala"
+      },
+      {
+        "screenId": "reservation-confirmed",
+        "label": "Reserva confirmada"
+      }
+    ],
+    "allowedStateKeys": [
+      "reservationSaved"
+    ],
+    "allowedActionIds": [
+      "reservation-saved"
+    ],
+    "allowedEventFields": [
+      "ok"
+    ]
+  },
+  "consent": {
+    "version": "study-v1",
+    "visualCaptureVersion": "visual-v1",
+    "controller": null,
+    "retentionDays": null,
+    "dataCategories": [
+      "eventos semânticos",
+      "tempos",
+      "respostas voluntárias",
+      "árvores visuais sanitizadas",
+      "pontos de clique"
+    ],
+    "audioEnabled": false,
+    "videoEnabled": false
+  },
+  "assignment": {
+    "method": "fixed",
+    "variantId": "original",
+    "persistOnResume": true
+  },
+  "variants": [
+    {
+      "variantId": "original",
+      "label": "Layout original",
+      "entry": "prototype/index.html"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenarioId": "empty",
+      "fixtureKey": "no-reservation"
+    },
+    {
+      "scenarioId": "reserved",
+      "fixtureKey": "demo-reservation"
+    }
+  ],
+  "resumePolicy": {
+    "enabled": true,
+    "scope": "same-browser",
+    "preserveAttempt": true
+  },
+  "tasks": [
+    {
+      "taskId": "reserve-room",
+      "title": "Preparar uma reunião",
+      "scenario": "Você precisa de um espaço para uma reunião da equipe amanhã. Encontre uma sala adequada e faça a reserva.",
+      "entry": {
+        "screenId": "rooms",
+        "scenarioId": "empty",
+        "continuity": "reset"
+      },
+      "completionMode": "participant",
+      "successCriterion": {
+        "all": [
+          {
+            "event": {
+              "type": "action",
+              "actionId": "reservation-saved",
+              "where": {
+                "ok": true
+              }
+            }
+          },
+          {
+            "state": {
+              "reservationSaved": true
+            }
+          }
+        ]
+      },
+      "manualReview": false,
+      "allowSelfReportedCompletion": true,
+      "allowGiveUp": true,
+      "timing": {
+        "excludeScreens": []
+      },
+      "postTaskQuestions": [
+        {
+          "questionId": "ease",
+          "type": "scale",
+          "prompt": "Quão fácil ou difícil foi realizar essa tarefa?",
+          "min": 1,
+          "max": 7,
+          "minLabel": "Muito difícil",
+          "maxLabel": "Muito fácil",
+          "required": false
+        },
+        {
+          "questionId": "comment",
+          "type": "text",
+          "prompt": "O que facilitou ou dificultou essa tarefa?",
+          "required": false
+        }
+      ]
+    },
+    {
+      "taskId": "understand-reservation",
+      "title": "Conferir a reserva",
+      "scenario": "Considere que uma reserva já foi feita para você. Confira os detalhes e explique o que entendeu sobre o horário e o local.",
+      "entry": {
+        "screenId": "reservation-confirmed",
+        "scenarioId": "reserved",
+        "continuity": "reset"
+      },
+      "completionMode": "participant",
+      "successCriterion": {
+        "manual": true
+      },
+      "manualReview": true,
+      "moderatorRubric": "Avaliar a explicação com base nos detalhes apresentados; abrir a tela não comprova compreensão.",
+      "allowSelfReportedCompletion": true,
+      "allowGiveUp": true,
+      "timing": {
+        "excludeScreens": []
+      },
+      "postTaskQuestions": [
+        {
+          "questionId": "understanding",
+          "type": "text",
+          "prompt": "O que você entendeu sobre essa reserva?",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "visual": {
+    "enabled": true,
+    "heatmaps": true,
+    "replay": true,
+    "captureSchemaVersion": "1",
+    "rendererBundleId": "example-renderer-v1",
+    "rendererBundle": "prototype/replay-bundle.html",
+    "privacy": {
+      "textPolicy": "static-allowlist",
+      "staticTextAllowlist": [
+        "Salas disponíveis",
+        "Detalhes da sala",
+        "Reserva confirmada",
+        "Reservar",
+        "Voltar"
+      ],
+      "maskSelectors": [
+        "[data-research-mask]",
+        "[data-user-content]"
+      ],
+      "excludeSelectors": [
+        "[data-research-exclude]"
+      ]
+    },
+    "limits": {
+      "maxFrames": 600,
+      "maxPoints": 3000,
+      "maxTreeBytes": 8388608
+    }
+  },
+  "analysis": {
+    "unit": "first-started-attempt-per-session-task",
+    "primarySuccessNumerator": "observed_success",
+    "primarySuccessDenominator": "all-started-attempts",
+    "timeMetric": "visibleExecutionMs",
+    "timePopulation": "observed_success-with-complete-duration",
+    "excludePilot": true
+  }
+}
