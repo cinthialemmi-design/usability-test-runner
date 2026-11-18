@@ -1,80 +1,62 @@
 ---
 name: usability-test-runner
-description: Use when a user wants usability tests of editable HTML prototypes on mobile, configurable tasks and success criteria, centralized results, click heatmaps or participant-only visual replay. Applies to brand-prototype-viewer output and other editable web prototypes; excludes native app binaries and uninstrumented external embeds.
+description: Use when a user wants an end-to-end hosted usability study for editable HTML prototypes on mobile, with tasks, reliable response collection, centralized storage, private results, click heatmaps or participant-only visual replay. Applies to brand-prototype-viewer output and other editable web prototypes; excludes native app binaries and uninstrumented external embeds.
 ---
 
-# Teste de usabilidade de protótipos HTML no celular
+# Sistema de testes de usabilidade HTML no celular
 
-Transforme um protótipo HTML em um estudo com tarefas, coleta, mapas de cliques e replay visual do produto. Suporte execução não moderada e acompanhamento por moderador, mantendo evidência automática e avaliação humana separadas. Não depende de plataforma externa de pesquisa.
+**A entrega padrão é um sistema conectado:** link hospedado para o participante, serviço que recebe sessões/respostas, armazenamento persistente e painel privado com resultados e exportação. Mapas e replay visual fazem parte do escopo padrão para HTML editável. A prévia local é uma etapa de conferência, não o encerramento normal do trabalho.
 
-Esta skill fornece instruções, contratos e validação de configuração para construir o estudo; não inclui um aplicativo, SDK de captura ou servidor pronto. Instalar a skill não publica um site nem cria armazenamento remoto.
+Quando invocada para construir um estudo, implemente e conecte essas partes; não entregue apenas um protótipo, configuração ou plano. Planejamento, prévia local ou importação manual são entregas finais somente quando o usuário pedir esse escopo. Instalar a skill não concede acesso a contas, serviços ou credenciais.
 
-## 1. Partir do que já existe
+## 1. Entender e configurar o estudo
 
-Reaproveite da **brand-prototype-viewer** os tokens, assets, componentes, navegação e montagem/limpeza das telas. Leia a skill original se estiver disponível e precisar interpretar sua estrutura; esta skill é autossuficiente para outros HTMLs. Trabalhe em uma cópia de teste e preserve o original.
+Inspecione o projeto antes de perguntar. Reaproveite objetivo, público, audiência do link e serviços já informados; esclareça apenas o que muda a implementação ou depende da decisão do usuário.
 
-| No viewer | No teste |
+Preserve o HTML original e sua marca. De **brand-prototype-viewer**, reaproveite tokens, assets, componentes, navegação e limpeza de telas. Retire da experiência de pesquisa as justificativas, dicas, seletor livre de versões e moldura de celular no aparelho real. Não herde quantidade de tarefas, regras de negócio ou cenários de outro projeto. O próprio HTML pode fornecer a referência visual.
+
+Leia [project-contract.md](references/project-contract.md) para configuração/adaptador e [study-design.md](references/study-design.md) para tarefas e perguntas. Marca, telas, variantes, cenários, critérios, regras de tempo e limites visuais pertencem à configuração. O motor permanece independente do domínio.
+
+O [exemplo JSON](assets/study.example.json) é fictício e está em prévia porque não possui serviços conectados; não define o padrão de entrega. O verificador em `scripts/validate_project.py` verifica consistência, não comprova funcionamento remoto.
+
+## 2. Escolher e conectar a infraestrutura
+
+Leia [infrastructure.md](references/infrastructure.md) antes de definir hospedagem, API, banco e acesso. Procure primeiro serviços e ferramentas já disponíveis no projeto e nas contas conectadas. Verifique suas capacidades e permissões reais; adapte a solução a eles em vez de impor uma pilha ou fornecedor.
+
+Defina onde cada componente roda, onde os dados ficam e como participantes e pesquisadores acessam. Não trate hospedagem estática, autenticação e banco como uma capacidade única. Se nada acessível atender, recomende uma opção compatível, explique por quê e indique a conexão/provisionamento que falta. Continue tudo o que independe desse acesso.
+
+## 3. Construir o sistema completo
+
+Leia [connected-system.md](references/connected-system.md) para interfaces, persistência, painel e ordem de integração.
+
+| Parte | Implementar |
 |---|---|
-| Moldura de aparelho | Apenas na prévia desktop; no celular, área real disponível |
-| Lista de fluxos | Sequência de tarefas definida pelo estudo |
-| Seletor de versões | Atribuição persistida, controlada pelo estudo |
-| Justificativas, personas, “Try this” | Material exclusivo do pesquisador |
-| Tour do produto | Introdução curta aos controles do teste |
-| Preferências visuais livres | Condição de teste fixa, preservando ajustes de acessibilidade |
+| Participante | Boas-vindas, consentimento, tarefas, instruções, pausa/saída, respostas e estado de envio |
+| Sessões e envio | Identidade de tentativa, retomada, fila durável, reenvio idempotente e confirmação real |
+| Serviço receptor | Validação, autorização, avaliação de critérios e persistência antes do aceite de recebimento |
+| Armazenamento | Estudos/revisões, sessões, eventos, respostas, avaliações, frames/pontos e política de retenção |
+| Painel privado | Consulta por tarefa/participação, métricas com denominadores, avaliação humana e filtros |
+| Exportação | CSV/JSON autorizados, com metadados e sem segredos |
+| Publicação | URLs funcionais para o estudo e o painel, com audiência e acessos adequados |
 
-Teste o design fornecido: não redesenhe componentes, corrija problemas de UX ou acrescente pistas sem solicitação. Não herde a obrigação de criar três direções, 4–7 fluxos ou novas telas. O próprio HTML pode ser a referência de marca; peça assets apenas se faltar algo necessário para construir conteúdo novo.
+Leia [html-integration.md](references/html-integration.md) para instrumentar o produto e [data-and-results.md](references/data-and-results.md) para dados e métricas. Conclusão observada, declaração e parecer humano são separados. Sem dados reais, use estado vazio; pilotos ficam identificados e isolados da coleta real.
 
-## 2. Definir o estudo
+Consentimento precede interações coletadas. Credenciais administrativas ficam no servidor. Autenticação não basta: autorize o pesquisador para o estudo e impeça leitura cruzada entre sessões. O link do participante não concede acesso ao relatório.
 
-Inspecione os arquivos antes de perguntar. Reaproveite objetivo, público e serviços já informados. Confirme apenas lacunas que mudam o teste: protótipo/entrada, decisão de pesquisa, participantes, tarefas, critérios observáveis e onde receber resultados.
+## 4. Construir mapas e replay
 
-Leia [project-contract.md](references/project-contract.md) para separar motor, configuração e adaptador. Marca, assets, telas, variantes, cenários, tarefas, perguntas, critérios, regras de tempo e limites visuais pertencem ao projeto. O motor não contém regras de negócio, IDs de tarefas fixos ou quantidade obrigatória de etapas.
+Leia [visual-capture-and-replay.md](references/visual-capture-and-replay.md). Capture somente a raiz configurada do produto, com árvores sanitizadas, geometria, rolagem e pontos vinculados. Mascare campos e conteúdo derivado, inclusive resumos/atributos, antes da fila.
 
-Leia [study-design.md](references/study-design.md) ao preparar a pesquisa. Use [study.example.json](assets/study.example.json), uma configuração fictícia de reserva de salas, como exemplo. Verifique-a com `python3 <pasta-da-skill>/scripts/validate_project.py <configuração.json>`. O script verifica consistência; não comprova funcionamento de captura, serviços ou privacidade.
+Preserve os estilos/assets de cada revisão. Agrupe mapas por visualização compatível. O player reconstrói capturas em ambiente inerte, com pausa, velocidade e linha do tempo; não executa operações do produto. Proteja também seus endpoints e exportações. Sessões sem captura mostram indisponibilidade, sem replay inventado.
 
-Registre estudo, revisão imutável do protótipo, versão atribuída e critérios de conclusão. Comece com uma versão e poucas tarefas quando não houver comparação pedida. Uma alteração durante a coleta cria outra revisão; não misture seus resultados silenciosamente.
+## 5. Demonstrar prontidão e entregar
 
-## 3. Construir a experiência do participante
+Leia [release-and-validation.md](references/release-and-validation.md). Antes de declarar a coleta pronta, confirme uma participação de piloto de ponta a ponta: abrir o link como o público previsto, consentir, concluir uma tarefa, enviar, verificar o registro persistido e encontrá-lo no painel autorizado. Conferir só a aparência ou uma mensagem de sucesso não comprova coleta centralizada.
 
-Percurso: **boas-vindas → informação e consentimento → instruções → tarefa → protótipo → pergunta de facilidade/comentário → próxima tarefa → encerramento e estado de envio**.
+Entregue o link de participação, o acesso ao painel, a localização dos dados, instruções de operação/exportação e o que foi verificado. Respeite pedidos para não executar testes ou publicar; nesses casos, registre a verificação/publicação pendente sem afirmar que foi feita.
 
-- Tarefa com contexto e objetivo, sem revelar botões ou caminho.
-- Iniciar somente quando o protótipo estiver pronto; instruções recolhíveis e reabríveis. Consentimento para captura visual precede qualquer snapshot ou ponto.
-- Oferecer “Acredito que terminei”, “Não consegui concluir” e saída voluntária. Declaração não equivale a sucesso observado.
-- Usar a tela do celular sem moldura interna, respeitando teclado, barras do navegador e áreas seguras. Fullscreen é melhoria opcional.
-- Separar eventos dos controles do estudo das interações do produto. Navegação de pesquisa não altera o protótipo.
-- Idioma do estudo em português por padrão; controles acessíveis, foco visível e movimento reduzido.
+Se faltar hospedagem, banco, credencial ou permissão, conclua a implementação até essa fronteira e entregue uma pendência concreta: componente afetado, acesso necessário, arquivos/comando preparados e próximo passo. Não substitua coleta conectada por localStorage ou encerre em uma recomendação genérica. Use status honestos: **implementação pronta; conexão pendente**, **publicado; verificação pendente** ou **coleta conectada verificada**.
 
-Leia [html-integration.md](references/html-integration.md) antes de instrumentar o HTML. Se só houver uma URL externa sem acesso ao código ou ponte de eventos, explicite quais medidas não podem ser observadas; não prometa rastrear seu conteúdo.
+## Limites
 
-## 4. Mapas e replay
-
-Inclua mapas e replay no escopo padrão de novos estudos HTML editáveis; permita desligá-los por configuração. Leia [visual-capture-and-replay.md](references/visual-capture-and-replay.md) antes de implementar qualquer captura, armazenamento ou reprodução visual.
-
-Capture apenas a raiz configurada do produto, com árvores estruturadas sanitizadas, dimensões, rolagem e coordenadas. Preserve estilos, fontes e assets em bundles imutáveis por revisão. O replay reconstrói capturas em um ambiente sem interação; não é vídeo nem reexecução do aplicativo.
-
-Mapas separam tarefa, revisão, variante, geometria e visualização exata. O painel oferece filtros, contagens e limites; replay tem reprodução/pausa, velocidade, linha do tempo e navegação por captura. Mascaramento cobre campos e conteúdo derivado de entradas, inclusive atributos e resumos. Sessões antigas sem capturas mostram indisponibilidade, sem reconstrução fictícia.
-
-## 5. Escolher a entrega e conectar a coleta
-
-| Modo | Entrega verificável |
-|---|---|
-| Prévia local | Estudo revisável com dados de piloto e exportação local; sem coleta centralizada |
-| Coleta conectada | Link hospedado, receptor e armazenamento testados; resultados restritos ao pesquisador |
-| Importação manual solicitada | Arquivos exportados pelos participantes e importados pelo pesquisador, com limitações explícitas |
-
-A coleta conectada é o objetivo para distribuir um teste com resultados centralizados. Sem serviços disponíveis, conclua os arquivos e a prévia, liste as conexões pendentes e não apresente o estudo como pronto para receber participantes. Prefira hospedagem/conectores já disponíveis; siga suas instruções ao usá-los e respeite a autorização existente.
-
-Leia [data-and-results.md](references/data-and-results.md) antes de implementar coleta, armazenamento ou análise. Consentimento precede eventos comportamentais. Reenvio deve ser idempotente, falha de conexão deve ficar visível e credenciais de administração ficam no servidor. Prévia/piloto nunca entram nas métricas reais.
-
-## 6. Resultados e entrega
-
-Produza visão por tarefa e participação, percurso, tempos, conclusão observada/declarada, desistências, problemas técnicos, respostas, avaliações do moderador, mapas e replay quando habilitados. Exporte CSV/JSON sem segredos; capturas completas são carregadas sob demanda. Compare versões apenas quando configuradas. Gere síntese com evidências e denominadores reais; sem participantes, mostre estado vazio.
-
-Leia [release-and-validation.md](references/release-and-validation.md) para verificar comportamento, coleta e acesso antes de distribuir. Informe o que foi testado em aparelho real e o que foi apenas simulado.
-
-Entregue arquivos, modo de coleta, tarefas e critérios, links que realmente existam, acesso aos resultados, verificações e pendências concretas. Publicação de protótipo, credenciais e serviços não são consequências automáticas da instalação desta skill. Não declare a página privada sem verificar sua configuração de acesso.
-
-## Limites e extensões
-
-A base cobre HTML mobile, eventos, respostas, mapas de cliques e reconstrução visual. Captura de outros aplicativos, vídeo/voz/câmera, aplicativos nativos, Figma sem ponte de eventos, recrutamento e inferência estatística exigem outro escopo. Mapas não medem olhar/atenção; replay não comprova compreensão.
+A skill orienta construção e conexão, mas não cria autorização ou credenciais indisponíveis. Vídeo/áudio/câmera, captura de outros aplicativos, app nativo, Figma sem ponte de eventos, recrutamento e inferência estatística exigem outro escopo. Mapas não medem olhar/atenção; replay não comprova compreensão.

@@ -2,6 +2,24 @@
 
 Leia antes de distribuir links ou afirmar que a coleta funciona.
 
+## Padrão de entrega e estados de conclusão
+
+Coleta conectada é a entrega padrão: participante hospedado, receptor, armazenamento durável e painel privado integrados. Prévia local é etapa intermediária; somente vira entrega final se esse for o escopo solicitado. A escolha de infraestrutura segue [infrastructure.md](infrastructure.md), e a construção de cada componente segue [connected-system.md](connected-system.md).
+
+Use estados que correspondem à evidência:
+
+- **Implementação pronta; conexão pendente:** arquivos, componentes e instruções específicos preparados; nomear o serviço/credencial/permissão que falta e a próxima ação.
+- **Publicado; verificação pendente:** existe publicação, mas o percurso ou a audiência prevista ainda não foi confirmado.
+- **Coleta conectada verificada:** sessão piloto concluída, dados persistidos recuperados no painel autorizado e audiência confirmada.
+
+Não chame armazenamento local, receptor simulado ou interface com dados fictícios de coleta centralizada funcionando. Se o usuário pediu para não testar/publicar, respeite e marque essa etapa como pendente.
+
+## Percurso mínimo de prontidão
+
+Antes de entregar o link como pronto para pesquisa, abrir como o público previsto, consentir, iniciar e concluir uma tarefa, enviar e receber confirmação, recuperar a mesma sessão/tentativa no armazenamento e encontrá-la no painel com uma identidade de pesquisador autorizada. Conferir a exportação correspondente e as capturas/mapas/replay habilitados. Uma mensagem de sucesso ou sessão aberta apenas pelo administrador não substitui essa evidência.
+
+Identifique e isole esse piloto da pesquisa real no servidor e no painel. Informe exatamente quais partes foram verificadas e o que depende de aparelho, acesso ou decisão ainda ausente.
+
 ## Entregas e dependências
 
 Uma estrutura possível, adaptável ao projeto existente:
@@ -10,15 +28,15 @@ Uma estrutura possível, adaptável ao projeto existente:
 study.config.json          marca, catálogos, tarefas, cenários, critérios e captura
 prototype/                 cópia instrumentada e assets do HTML
 participant/               experiência do estudo
-researcher/                consulta e exportação protegidas, se houver coleta conectada
-server/                    receptor, persistência e autorização, quando necessários
+researcher/                consulta e exportação protegidas
+server/                    receptor, persistência e autorização
 visual/                    captura, renderer isolado, mapas e player reutilizáveis
 dist/                      arquivos publicáveis
 ```
 
 Não crie pastas vazias nem finja que essa árvore já implementa o sistema. Prefira a estrutura e o processo de build existentes quando adequados. Um HTML único é possível para a prévia; coleta centralizada requer armazenamento/receptor acessível. Documente como executar, configurar e publicar os arquivos realmente entregues.
 
-Se o objetivo é coleta conectada e faltam serviços, termine o que independe deles e marque o estado como **prévia; conexão pendente**. Peça só a conexão/acesso necessário para o próximo passo. Não solicite chaves secretas em texto no chat; use mecanismos de conexão/configuração disponíveis. A skill não fixa provedor pago ou arquitetura que o usuário não escolheu.
+Se faltam serviços, termine o que independe deles e marque o estado como **implementação pronta; conexão pendente** apenas se a implementação efetivamente estiver pronta. Inclua receptor, esquema/migrações, painel e configuração de publicação preparados até a fronteira do acesso ausente; não reduza a entrega a uma prévia ou lista de recomendações. Peça só a conexão/acesso necessário para o próximo passo. Não solicite chaves secretas em texto no chat; use mecanismos de conexão/configuração disponíveis. A skill não fixa provedor pago ou arquitetura que o usuário não escolheu.
 
 ## Hospedagem
 

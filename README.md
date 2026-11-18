@@ -1,8 +1,8 @@
 # usability-test-runner
 
-Skill para orientar o Codex a criar testes de usabilidade de protótipos HTML no celular, com tarefas, coleta de resultados, mapas de cliques e replay visual.
+Skill para orientar o Codex a construir e conectar sistemas completos de testes de usabilidade de protótipos HTML no celular: participante, recebimento de respostas, armazenamento, painel privado, mapas de cliques e replay visual.
 
-A skill contém instruções, contratos, exemplos de configuração e um verificador. Ela orienta a construção dos componentes de cada estudo; não inclui uma plataforma hospedada, um SDK de captura ou um servidor pronto.
+A entrega padrão ao usar a skill é um link hospedado com coleta centralizada e painel funcionando. A prévia local serve para conferir o estudo. A skill contém as instruções e contratos para construir, conectar e publicar os componentes; instalar a skill não cria acesso a contas, serviços ou credenciais.
 
 ## Instalar no Codex
 
@@ -18,12 +18,24 @@ Para instalar manualmente, baixe o repositório e copie a pasta `usability-test-
 
 Forneça o HTML ou seu projeto editável, o objetivo da pesquisa e o público. A skill ajuda a definir as tarefas e critérios e a identificar as conexões de hospedagem e armazenamento necessárias.
 
+## Infraestrutura e entrega
+
+O Codex deve procurar primeiro hospedagem, backend, banco e autenticação disponíveis no projeto ou nas contas conectadas e adaptar a implementação a eles. Sem infraestrutura acessível, recomenda uma opção compatível e conclui o trabalho que não depende da conexão ausente.
+
+Antes de declarar a coleta pronta, deve confirmar uma sessão de piloto de ponta a ponta: abrir o link como o participante, consentir, concluir uma tarefa, enviar, recuperar o registro persistido e encontrá-lo no painel autorizado. O piloto permanece identificado e separado dos resultados reais.
+
+Se faltar um serviço, permissão ou credencial, a entrega deve conter a implementação preparada até esse ponto e a pendência concreta para conectar/publicar. Pedidos de escopo local ou para não testar/publicar são respeitados, e a etapa fica explicitamente pendente.
+
+Leia os guias de [infraestrutura](usability-test-runner/references/infrastructure.md) e [sistema conectado](usability-test-runner/references/connected-system.md).
+
 ## Capacidades
 
 - Experiência do participante com consentimento, instruções, tarefas, pausa, respostas e encerramento.
 - Marca, assets, telas, variantes, cenários, perguntas e critérios configuráveis por projeto.
 - Separação entre conclusão observada, declaração do participante e avaliação humana.
-- Coleta com identificação de sessão, persistência, reenvio idempotente e confirmação de recebimento.
+- Página do participante, receptor, armazenamento persistente, painel privado e exportação conectados.
+- Escolha de infraestrutura baseada nos serviços e acessos efetivamente disponíveis.
+- Coleta com identificação de sessão, persistência, reenvio idempotente e confirmação durável de recebimento.
 - Mapas por tarefa, tela e visualização compatível, considerando tamanho e rolagem.
 - Replay por reconstrução de capturas sanitizadas, com controles de reprodução e bundles visuais versionados.
 - Mascaramento de campos e conteúdo derivado, como resumos e atributos.
@@ -33,7 +45,7 @@ O replay não é vídeo. Mapas de cliques não medem olhar ou atenção. Captura
 
 ## Configuração de exemplo
 
-O arquivo [`study.example.json`](usability-test-runner/assets/study.example.json) usa um estudo fictício de reserva de salas. Ele está em modo de prévia, com dados de piloto. Os caminhos do protótipo são ilustrativos; a configuração não contém um aplicativo implementado.
+O arquivo [`study.example.json`](usability-test-runner/assets/study.example.json) usa um estudo fictício de reserva de salas. Ele está em modo de prévia, com dados de piloto, porque não tem serviços conectados; isso não altera o padrão de entrega conectada. Os caminhos do protótipo são ilustrativos; a configuração não contém um aplicativo implementado.
 
 A configuração usa o contrato versão 2. Projetos anteriores exigem migração explícita. Atualizar a skill não altera pesquisas já publicadas nem ativa captura retroativa.
 
