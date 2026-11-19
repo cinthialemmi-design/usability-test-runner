@@ -44,13 +44,14 @@ const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 async function render(data){
  const frame=data.frame;
  if(!frame||frame.prototypeRevision!==CFG.prototypeRevision||frame.rendererBundleId!==CFG.visual.rendererBundleId||frame.brandBundleId!==CFG.brand.bundleId||frame.captureSchemaVersion!==CFG.visual.captureSchemaVersion)throw Error('Revisão incompatível.');
- if(!Number.isInteger(frame.width)||!Number.isInteger(frame.height)||frame.width<160||frame.width>2048||frame.height<160||frame.height>4096)throw Error('Geometria inválida.');
+ const geometry=normalizeGeometry(frame);
+ if(window.innerWidth!==geometry.viewport.width||window.innerHeight!==geometry.viewport.height)throw Error('Janela de reprodução incompatível.');
  pending=data;
  if(currentFrameId===frame.frameId){if(ready)drawPoints(pending);return;}
  const version=++generation;currentFrameId=frame.frameId;ready=false;overlay=null;
  const tree=sanitizeTree(frame.tree,CFG.visual.privacy,CFG.brand.assets),scrolls=[];nodeCount=0;
  const root=makeNode(tree,scrolls);root.id=CFG.prototype.rootSelector.slice(1);root.classList.add('prototype-root');
- root.style.width=frame.width+'px';root.style.height=frame.height+'px';root.style.borderRadius='0';root.inert=true;
+ root.style.width=geometry.width+'px';root.style.height=geometry.height+'px';root.style.boxSizing='border-box';root.style.margin='0';root.style.border='0';root.style.borderRadius='0';root.style.position='absolute';root.style.left=geometry.region.left+'px';root.style.top=geometry.region.top+'px';root.inert=true;
  document.body.replaceChildren(root);
  let timeout;
  try{
@@ -63,7 +64,7 @@ async function render(data){
  if(version!==generation)return;
  for(const [element,top,left]of scrolls){element.scrollTop=top;element.scrollLeft=left;}
  overlay=document.createElement('canvas');overlay.width=frame.width;overlay.height=frame.height;
- overlay.style.cssText='position:absolute;left:0;top:0;pointer-events:none;z-index:99';document.body.append(overlay);
+ overlay.style.cssText='position:absolute;pointer-events:none;z-index:99';overlay.style.left=geometry.region.left+'px';overlay.style.top=geometry.region.top+'px';document.body.append(overlay);
  ready=true;drawPoints(pending);
 }
 // Keep semantic elements for CSS fidelity; disable behavior independently.

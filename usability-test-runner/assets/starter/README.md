@@ -74,7 +74,7 @@ Há limpeza por retenção ao iniciar, a cada hora enquanto o servidor está ati
 
 ## Perfil implementado e limites
 
-`runtimeProfile: "starter-2"` suporta:
+`runtimeProfile: "starter-3"` suporta:
 
 - Um estudo/revisão/ambiente e uma variante fixa por instalação; primeira tentativa de cada tarefa por participação.
 - Qualquer quantidade de tarefas configuradas, conclusão declarada pelo participante, desistência opcional, critérios `all`, `any`, `event`, `state`, `answer` e `manual`.
@@ -83,6 +83,18 @@ Há limpeza por retenção ao iniciar, a cada hora enquanto o servidor está ati
 - Captura de HTML/CSS estático aprovado, imagens/fontes locais registradas, textos em lista explícita, campos ocultados, classes/IDs/atributos estáticos permitidos, limites e sinalização de captura parcial.
 
 O perfil recusa atribuição aleatória/balanceada e conclusão automática `observed`; esses contratos exigem extensão do código. Também não implementa ponte entre origens, SVG inline, canvas, vídeo, Shadow DOM, estilos inline dinâmicos, pseudoestados de interação, transformações complexas, multiestudo ou contas individuais.
+
+## Janela original e estilos separados
+
+Cada frame registra o tamanho da janela (`viewport`), a posição da raiz (`region`) e o recorte visível (`crop`), além das dimensões internas do produto. Resize, rolagem da página e alterações do viewport visual podem gerar outra captura. O servidor normaliza esses campos, recalcula o recorte e impede pontos fora da área visível. A identidade dos mapas inclui esse contexto.
+
+O iframe do replay tem as dimensões da janela original. O painel desloca e recorta sua apresentação para mostrar apenas a parte visível do produto. Um produto de 430 px dentro de uma janela de 1280 px continua usando regras responsivas de 1280 px durante a reconstrução. Os pontos e o recorte usam a mesma origem/escala. O tamanho da janela não autoriza capturar conteúdo fora da raiz do produto.
+
+`runner.css` usa `.utr-ui` somente no cabeçalho, instruções, controles, status, diálogo e painel. Não envolva o produto com essa classe; o carregamento verifica esse limite. Os tokens são `--utr-*`. As classes de organização `.utr-layout`, `.utr-stage` e `.utr-product-slot` não aplicam fonte, cor ou tokens herdados ao produto. O corpo `.utr-page` ajusta apenas margem e fundo da página do estudo.
+
+O produto tem tokens, resets, controles e fontes próprios em `public/prototype/style.css`. `brand.stylesheets` lista somente as folhas do produto; não inclua `/runner.css`. O replay carrega essas folhas e um placeholder interno `.utr-masked`, sem CSS dos controles do estudo.
+
+A janela aceita 160–7680 px em cada eixo; a raiz aceita 160–2048 px de largura e 160–4096 px de altura. O recorte tem precisão de duas casas decimais. Geometria não emula navegador, densidade física, preferências do sistema ou todos os comportamentos de teclado/zoom. A raiz deve ser autocontida e sem transformações; ancestrais/containers externos ao produto precisam de adaptação.
 
 ## Imagens e fontes aprovadas
 
@@ -100,7 +112,7 @@ O renderer aguarda imagens/fontes antes de restaurar rolagens e desenhar pontos.
 
 A fila volta a priorizar eventos após cada requisição visual. Chamadas feitas durante um envio ficam sinalizadas para nova passagem. A resposta final e o encerramento aguardam filas vazias e carregam `eventBarrier: {count,lastSequence}`; o servidor confere quantidade e última sequência persistida antes de fechar a tentativa/sessão. Isso impede aceitar uma resposta final com evidências ainda pendentes. Reenvios mantêm IDs e confirmação durável.
 
-Esta versão usa captura visual `captureSchemaVersion: "2"` e perfil `starter-2`, mantendo o contrato portátil `schemaVersion: "2"`. Para migrar do perfil anterior, prepare outra cópia/revisão e outro `DATA_DIR`, registre os arquivos e mantenha a instalação anterior com seus dados. Atualizar a skill não migra estudos publicados nem reinterpreta frames antigos.
+Esta versão usa captura visual `captureSchemaVersion: "3"` e perfil `starter-3`, mantendo o contrato portátil `schemaVersion: "2"`. Para migrar do perfil anterior, prepare outra cópia/revisão e outro `DATA_DIR`, registre os arquivos e mantenha a instalação anterior com seus dados. Atualizar a skill não migra estudos publicados nem reinterpreta frames antigos.
 
 
 Mapas representam pontos recebidos, não olhar. Replay não é vídeo, não reproduz digitação e não prova compreensão. IDs de sessão reduzem identificação direta, mas não tornam comentários ou qualquer pesquisa automaticamente anônimos. A base exige revisão do mascaramento em cada produto; não é uma garantia de prontidão para produção.
@@ -111,6 +123,7 @@ Mapas representam pontos recebidos, não olhar. Replay não é vídeo, não repr
 public/engine.mjs          participante, tarefas e envio
 public/capture.mjs         captura sanitizada e pontos
 public/core.mjs            critérios, sanitização e métricas
+public/geometry.mjs        janela, área do produto e recorte normalizados
 public/results.mjs         painel, exportação, mapas e player
 public/renderer.mjs        reconstrução isolada
 public/prototype/          produto de exemplo substituível

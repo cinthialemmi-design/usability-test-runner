@@ -1,4 +1,5 @@
 import {canonical,digest,evaluate,sanitizeTree,groupKey,summarize} from '../public/core.mjs';
+import {normalizeGeometry} from '../public/geometry.mjs';
 import {participantConfig} from './profile.mjs';
 
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
@@ -102,9 +103,9 @@ export async function handleAPI(request,env){
     for(const raw of body.frames){
      const ctx=context(raw,s);await ensureAttempt(s,ctx.taskId,ctx.attemptId);id(raw.frameId);
      for(const [key,value]of Object.entries({prototypeRevision:s.revision,variantId:s.variant,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,captureSchemaVersion:cfg.visual.captureSchemaVersion}))if(raw[key]!==value)fail(400,'Revisão visual incompatível.');
-     const width=number(raw.width,160,2048),height=number(raw.height,160,4096);if(!Number.isInteger(width)||!Number.isInteger(height))fail(400,'Geometria inválida.');
+     let geometry;try{geometry=normalizeGeometry(raw);}catch(error){fail(400,error.message);}
      const tree=sanitizeTree(raw.tree,cfg.visual.privacy,cfg.brand.assets);if(!tree)fail(400,'Árvore inválida.');
-     const data={...ctx,frameId:raw.frameId,width,height,tree,prototypeRevision:s.revision,variantId:s.variant,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,captureSchemaVersion:cfg.visual.captureSchemaVersion,timelineMs:number(raw.timelineMs),segmentId:id(raw.segmentId)};
+     const data={...ctx,frameId:raw.frameId,...geometry,tree,prototypeRevision:s.revision,variantId:s.variant,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,captureSchemaVersion:cfg.visual.captureSchemaVersion,timelineMs:number(raw.timelineMs),segmentId:id(raw.segmentId)};
      data.layoutKey=await groupKey(data);const bytes=new TextEncoder().encode(canonical(tree)).length;if(bytes>80000)fail(413,'Captura grande demais.');
      if(!await existingRecord(s,raw.frameId,data)){budget.frames++;budget.bytes+=bytes;}
      batch.push({id:raw.frameId,kind:'frame',data});frames.set(raw.frameId,data);
@@ -113,7 +114,9 @@ export async function handleAPI(request,env){
      const ctx=context(raw,s);id(raw.pointId);id(raw.frameId);
      let frame=frames.get(raw.frameId);if(!frame){const row=await q("SELECT data FROM records WHERE session_id=? AND id=? AND kind='frame'",s.id,raw.frameId).first();frame=row&&JSON.parse(row.data);}
      if(!frame||frame.attemptId!==ctx.attemptId||frame.taskId!==ctx.taskId||frame.screenId!==ctx.screenId||frame.segmentId!==raw.segmentId)fail(400,'Ponto sem captura correspondente.');
-     const data={...ctx,pointId:raw.pointId,frameId:raw.frameId,x:number(raw.x,0,frame.width),y:number(raw.y,0,frame.height),kind:raw.kind==='tap'?'tap':'click',timelineMs:number(raw.timelineMs),segmentId:id(raw.segmentId)};
+     const x=number(raw.x,0,frame.width),y=number(raw.y,0,frame.height);
+     if(x<frame.crop.x-0.05||x>frame.crop.x+frame.crop.width+0.05||y<frame.crop.y-0.05||y>frame.crop.y+frame.crop.height+0.05)fail(400,'Ponto fora da área visível capturada.');
+     const data={...ctx,pointId:raw.pointId,frameId:raw.frameId,x,y,kind:raw.kind==='tap'?'tap':'click',timelineMs:number(raw.timelineMs),segmentId:id(raw.segmentId)};
      if(!await existingRecord(s,raw.pointId,data))budget.points++;
      batch.push({id:raw.pointId,kind:'point',data});
     }

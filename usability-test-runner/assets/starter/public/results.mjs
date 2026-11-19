@@ -1,3 +1,4 @@
+import {normalizeGeometry} from './geometry.mjs';
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let cfg,report,page=1,heatGroups=[],replay=null,frames=[],points=[];
@@ -20,9 +21,10 @@ function stage(id,frame,dots,mode) {
   const host=$(id),iframe=host.querySelector('iframe');let state=stageStates.get(iframe);
   if (!state) {state={nonce:null,data:null};stageStates.set(iframe,state);}
   host.hidden=!frame;state.data=frame?{frame,points:dots,mode}:null;if(!frame){state.signature=null;return;}
-  const width=Math.min(host.parentElement.clientWidth,430,frame.width),scale=width/frame.width;
-  host.style.width=width+'px';host.style.height=frame.height*scale+'px';
-  iframe.style.width=frame.width+'px';iframe.style.height=frame.height+'px';iframe.style.transformOrigin='top left';iframe.style.transform='scale('+scale+')';
+  const geometry=normalizeGeometry(frame);
+  const width=Math.min(host.parentElement.clientWidth,430,geometry.crop.width),scale=width/geometry.crop.width;
+  host.style.width=width+'px';host.style.height=geometry.crop.height*scale+'px';
+  iframe.style.width=geometry.viewport.width+'px';iframe.style.height=geometry.viewport.height+'px';iframe.style.left=-(geometry.region.left+geometry.crop.x)*scale+'px';iframe.style.top=-(geometry.region.top+geometry.crop.y)*scale+'px';iframe.style.transformOrigin='top left';iframe.style.transform='scale('+scale+')';
   const signature=[frame.frameId,mode,dots.length,dots.at(-1)?.pointId||''].join(':');
   if(state.signature===signature&&state.nonce)return;state.signature=signature;
   if(state.nonce)iframe.contentWindow.postMessage({type:'usability-frame',nonce:state.nonce,...state.data},'*');
@@ -104,7 +106,7 @@ $('#load-heat').onclick=async()=>{
     $('#heat-status').textContent='Carregando pontos…';
     const query=new URLSearchParams({taskId:$('#heat-task').value,screenId:$('#heat-screen').value,...($('#heat-session').value?{sessionId:$('#heat-session').value}:{})});
     const data=await api('/heatmap?'+query);heatGroups=data.groups;
-    $('#heat-group').innerHTML=heatGroups.map((g,i)=>`<option value="${i}">Visualização ${i+1} · ${g.frame.width} × ${g.frame.height} · ${g.totalPoints} pontos · ${g.sessions} participações</option>`).join('');
+    $('#heat-group').innerHTML=heatGroups.map((g,i)=>`<option value="${i}">Visualização ${i+1} · janela ${g.frame.viewport.width} × ${g.frame.viewport.height} · área ${g.frame.crop.width} × ${g.frame.crop.height} · ${g.totalPoints} pontos · ${g.sessions} participações</option>`).join('');
     $('#heat-status').textContent=data.totalPoints?data.totalPoints+' pontos recebidos.'+(data.truncated?' Exibindo até 3.000 pontos por visualização; totais completos preservados.':''):'Nenhum ponto recebido neste filtro. Isso também pode indicar captura ausente ou parcial.';
     drawHeat();
   } catch(error){$('#heat-status').textContent=error.message;}
@@ -124,7 +126,7 @@ function drawReplay(){
   const dots=frame?points.filter(p=>p.frameId===frame.frameId&&p.timelineMs<=time):[];
   stage('#replay-stage',frame,dots,'replay');$('#replay-time').value=time;
   const markers=(replay.events||[]).filter(e=>e.timelineMs<=time&&(!$('#replay-task').value||e.taskId===$('#replay-task').value));const marker=markers.at(-1);const gap=marker&&(marker.type==='pause'||marker.type==='visibility_changed'&&!marker.payload.visible);
-  $('#replay-status').textContent=frame?`${((time-start)/1000).toFixed(1)} / ${((end-start)/1000).toFixed(1)} s · ${cfg.prototype.screens.find(s=>s.screenId===frame.screenId)?.label||frame.screenId} · ${frames.length} capturas · ${points.length} pontos · segmento ${frame.segmentId.slice(0,8)}${gap?' · pausa ou segundo plano':''}${replay.captureIncomplete?' · captura parcial':''}`:'Sem captura visual para esta tarefa ou participação.';
+  $('#replay-status').textContent=frame?`${((time-start)/1000).toFixed(1)} / ${((end-start)/1000).toFixed(1)} s · ${cfg.prototype.screens.find(s=>s.screenId===frame.screenId)?.label||frame.screenId} · janela ${frame.viewport.width} × ${frame.viewport.height} · ${frames.length} capturas · ${points.length} pontos · segmento ${frame.segmentId.slice(0,8)}${gap?' · pausa ou segundo plano':''}${replay.captureIncomplete?' · captura parcial':''}`:'Sem captura visual para esta tarefa ou participação.';
   $('#replay-play').disabled=!frames.length||end<=start;
 }
 $('#replay-task').onchange=filterReplay;

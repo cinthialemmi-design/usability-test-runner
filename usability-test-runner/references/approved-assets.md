@@ -9,7 +9,7 @@ Copie somente os arquivos aprovados para `public/` e declare-os em `brand.assets
 ```json
 {
   "brand": {
-    "stylesheets": ["/runner.css", "/prototype/style.css"],
+    "stylesheets": ["/prototype/style.css"],
     "assets": [
       {"assetId": "logo", "kind": "image", "path": "/prototype/assets/logo.svg"},
       {"assetId": "brand-regular", "kind": "font", "path": "/prototype/assets/brand-regular.woff2"}
@@ -24,7 +24,7 @@ O exemplo incluído já contém uma marca SVG e fontes Atkinson Hyperlegible com
 
 ## Empacotamento implementado
 
-O perfil `starter-2` exige Node.js 24+ e dependências travadas em `package-lock.json`. Instale com `npm ci --ignore-scripts` antes de iniciar ou gerar o pacote. PostCSS e postcss-value-parser leem a estrutura do CSS; nenhum plugin configurado pelo protótipo é executado.
+O perfil `starter-3` exige Node.js 24+ e dependências travadas em `package-lock.json`. Instale com `npm ci --ignore-scripts` antes de iniciar ou gerar o pacote. PostCSS e postcss-value-parser leem a estrutura do CSS; nenhum plugin configurado pelo protótipo é executado.
 
 - Imagens: PNG, JPEG, WebP, GIF, AVIF e um subconjunto conservador de arquivos SVG estáticos. O navegador alvo também precisa decodificar o formato. Imagens animadas não têm seu instante de animação reconstruído.
 - Fontes: WOFF, WOFF2, TTF e OTF aprovadas. O empacotamento verifica extensão/assinatura, calcula SHA-256 e incorpora os bytes no bundle da revisão.
@@ -34,6 +34,8 @@ O perfil `starter-2` exige Node.js 24+ e dependências travadas em `package-lock
 - Orçamentos: 4 MiB por imagem/fonte, 16 MiB de assets no total, 2 MiB de CSS fonte e até 64 folhas; o CSS incorporado tem limite de 32 MiB por bundle e 64 MiB somando folhas compiladas. Esses limites são técnicos deste perfil, não regras de pesquisa.
 
 SVG é carregado como imagem, nunca como markup ativo. O subconjunto recusa scripts, eventos, referências, estilos internos e elementos ativos/animados; SVG incompatível deve ser simplificado ou convertido para PNG/WebP. SVG inline, sprites com `use`, filtros referenciados e canvas exigem outra integração.
+
+O CSS da pesquisa em `runner.css` fica fora do bundle do produto. Consulte [viewport-and-css.md](viewport-and-css.md) para janela original e escopos de estilo.
 
 ## Captura e reconstrução
 
@@ -49,6 +51,6 @@ Isso corrige dependências de tags e recursos estáticos; não garante igualdade
 
 ## Versão e verificação
 
-Este perfil usa `captureSchemaVersion: "2"`. Mantenha o contrato portátil `schemaVersion: "2"`; são versões de camadas diferentes. Para migrar de `starter-1`, prepare outra instalação/revisão e outro banco, registre os assets e preserve o pacote antigo com seus dados. Não reinterprete árvores antigas nem ative captura retroativa.
+Este perfil usa `captureSchemaVersion: "3"`. Mantenha o contrato portátil `schemaVersion: "2"`; são versões de camadas diferentes. Para migrar de perfis anteriores, prepare outra instalação/revisão e outro banco, registre os assets e preserve o pacote antigo com seus dados. Não reinterprete árvores antigas nem ative captura retroativa.
 
 Os ajustes foram preparados sem executar testes. Quando a execução for autorizada, verificar imagem, fonte, importação CSS, formulário, rolagem, mascaramento e posições dos pontos no aparelho alvo, conforme a lista pendente da base.

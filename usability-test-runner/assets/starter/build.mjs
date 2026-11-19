@@ -14,15 +14,16 @@ export function buildStudy() {
   const resources=compileAssets(publicDir,cfg.brand),styles=resources.styles;
   cfg.brand.assets=resources.manifest;
   if (!existsSync(inside(resolve(publicDir,cfg.prototype.adapter)))) throw Error('Adaptador não encontrado.');
+  const geometry=readFileSync(resolve(publicDir,'geometry.mjs'),'utf8').replaceAll('export ','');
   const core = readFileSync(resolve(publicDir,'core.mjs'),'utf8').replaceAll('export ','');
   const player = readFileSync(resolve(publicDir,'renderer.mjs'),'utf8');
-  const stamp = createHash('sha256').update(JSON.stringify(cfg)+styles+core+player).digest('hex').slice(0,24);
+  const stamp = createHash('sha256').update(JSON.stringify(cfg)+styles+geometry+core+player).digest('hex').slice(0,24);
   cfg.brand.bundleId = 'brand-'+stamp;
   cfg.visual.rendererBundleId = 'renderer-'+stamp;
   cfg.visual.rendererBundle = 'replay/'+stamp+'.html';
   const renderConfig = {prototypeRevision:cfg.prototypeRevision,brand:{...cfg.brand,assets:resources.rendererAssets},prototype:{rootSelector:cfg.prototype.rootSelector},visual:cfg.visual};
   const encoded = JSON.stringify(renderConfig).replaceAll('<','\\u003c');
-  const renderer = `<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'; img-src data:; font-src data:"><title>Reconstrução do protótipo</title><style>${styles}\nhtml,body{margin:0;padding:0;overflow:hidden;background:var(--surface)}.prototype-root{margin:0;border:0;border-radius:0;pointer-events:none}*{animation:none!important;transition:none!important;caret-color:transparent!important}</style><body><script>const CFG=${encoded};\n${core}\n${player}</script></body></html>`;
+  const renderer = `<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'; img-src data:; font-src data:"><title>Reconstrução do protótipo</title><style>${styles}\nhtml,body{margin:0;padding:0;overflow:hidden;background:transparent}.prototype-root{pointer-events:none;scrollbar-width:none!important}.prototype-root::-webkit-scrollbar{display:none!important}.utr-masked{box-sizing:border-box;display:inline-block;overflow:hidden;color:#747b7a;background:#e7e9e4;padding:4px 8px;border-radius:5px;font:11px sans-serif}*{animation:none!important;transition:none!important;caret-color:transparent!important}</style><body><script>const CFG=${encoded};\n${geometry}\n${core}\n${player}</script></body></html>`;
   const files = {};
   function visit(dir) {
     for (const entry of readdirSync(dir,{withFileTypes:true})) {

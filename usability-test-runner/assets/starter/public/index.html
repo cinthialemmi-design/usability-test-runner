@@ -6,23 +6,23 @@
   <title>Estudo de usabilidade</title>
   <link rel="stylesheet" href="/runner.css">
 </head>
-<body>
-  <header class="lab-header"><a href="/" class="lab-brand" id="study-brand">Estudo</a></header>
-  <main class="lab-layout">
-    <aside class="study-sidebar">
+<body class="utr-page">
+  <header class="utr-ui lab-header"><a href="/" class="lab-brand" id="study-brand">Estudo</a></header>
+  <main class="utr-layout">
+    <aside class="utr-ui study-sidebar">
       <p id="study-environment" class="note"></p>
       <h1 id="study-title">Teste de usabilidade</h1>
       <p>Queremos entender como este protótipo funciona para você. As instruções aparecem antes de cada tarefa.</p>
       <ol id="task-list"></ol>
       <p class="side-note">Você pode recusar a participação, pausar ou encerrar quando quiser.</p>
     </aside>
-    <section class="study-stage" aria-label="Participação">
-      <div id="study-controls" data-research-exclude></div>
-      <div class="product-frame"><div id="prototype-mount" class="prototype-root" tabindex="-1" inert></div></div>
-      <p id="sync-status" class="sync-status" role="status" aria-live="polite">Carregando o estudo…</p>
+    <section class="utr-stage" aria-label="Participação">
+      <div class="utr-ui" id="study-controls" data-research-exclude></div>
+      <div class="utr-product-slot"><div id="prototype-mount" class="prototype-root" tabindex="-1" inert></div></div>
+      <p id="sync-status" class="utr-ui sync-status" role="status" aria-live="polite">Carregando o estudo…</p>
     </section>
   </main>
-  <dialog id="study-dialog" aria-labelledby="dialog-title"></dialog>
+  <dialog class="utr-ui" id="study-dialog" aria-labelledby="dialog-title"></dialog>
   <script type="module" src="/app.mjs"></script>
 </body>
 </html>

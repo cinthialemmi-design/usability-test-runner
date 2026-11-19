@@ -19,7 +19,7 @@ Não contorne restrições de iframe ou autenticação. Um iframe externo, Figma
 2. **Estudo:** instruções, sequência, consentimento, perguntas e encerramento.
 3. **Coleta:** sessão, fila, transporte e confirmação remota.
 
-O estudo não deve inserir controles ou CSS globais dentro do produto. Use raízes/CSS isolados. O painel recolhível fica fora do viewport do produto ou reserva espaço próprio; seu botão de retorno não cobre tab bar, CTA ou campos. Não reduza o protótipo inteiro com `transform: scale()` para encaixar a moldura no celular: preserve legibilidade e tamanho de toque.
+O estudo não deve inserir controles ou CSS globais dentro do produto. Use raízes/CSS isolados. Na referência, `.utr-ui` envolve somente controles do estudo e nunca a raiz do produto; tokens usam `--utr-*`. O produto define seus próprios estilos e não depende de `runner.css`. Veja [viewport-and-css.md](viewport-and-css.md). O painel recolhível fica fora do viewport do produto ou reserva espaço próprio; seu botão de retorno não cobre tab bar, CTA ou campos. Não reduza o protótipo inteiro com `transform: scale()` para encaixar a moldura no celular: preserve legibilidade e tamanho de toque.
 
 ## Adaptador do protótipo
 

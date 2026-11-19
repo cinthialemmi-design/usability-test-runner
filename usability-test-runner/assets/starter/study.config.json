@@ -2,8 +2,8 @@
   "schemaVersion": "2",
   "exampleOnly": false,
   "studyId": "rooms-demo",
-  "studyRevision": "2",
-  "prototypeRevision": "rooms-r2",
+  "studyRevision": "3",
+  "prototypeRevision": "rooms-r3",
   "title": "Reserva de salas",
   "locale": "pt-BR",
   "researchObjective": "Observar a reserva de um espaço e a compreensão da confirmação.",
@@ -18,7 +18,6 @@
     "bundleId": "rooms-brand-r1",
     "label": "Salas",
     "stylesheets": [
-      "/runner.css",
       "/prototype/style.css"
     ],
     "assets": [
@@ -292,7 +291,7 @@
     "enabled": true,
     "heatmaps": true,
     "replay": true,
-    "captureSchemaVersion": "2",
+    "captureSchemaVersion": "3",
     "rendererBundleId": "rooms-renderer-r1",
     "rendererBundle": "replay/rooms-r1.html",
     "privacy": {
@@ -365,7 +364,6 @@
         "eyebrow",
         "field",
         "link",
-        "masked",
         "primary",
         "product-header",
         "product-nav",
@@ -418,5 +416,5 @@
     "welcomeTitle": "Vamos testar a reserva de salas?",
     "contextNote": "Cenário fictício: amanhã, das 14h às 15h."
   },
-  "runtimeProfile": "starter-2"
+  "runtimeProfile": "starter-3"
 }

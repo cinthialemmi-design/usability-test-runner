@@ -10,7 +10,7 @@ O bundle do renderizador inclui CSS, fontes, tokens e assets aprovados da revis�
 
 ## Consentimento e estados de captura
 
-O aviso informa reconstrução de telas e rolagem do protótipo, pontos de toque/clique, respostas, acesso e retenção. Não descreva isso como gravação de vídeo nem como ausência de captura visual. Não registre árvore/ponto antes de aceite explícito da versão visual; uma sessão antiga deve aceitar a mudança antes de começar capturas novas.
+O aviso informa reconstrução de telas, dimensões da janela, área visível e rolagem do protótipo, pontos de toque/clique, respostas, acesso e retenção. Não descreva isso como gravação de vídeo nem como ausência de captura visual. Não registre árvore/ponto antes de aceite explícito da versão visual; uma sessão antiga deve aceitar a mudança antes de começar capturas novas.
 
 Capture somente durante execução da tentativa ativa, com página visível, sem pausa, diálogo de instruções/perguntas ou encerramento. A saída voluntária interrompe novos registros. Não grave o roteiro do moderador, notas, respostas livres, toolbars do estudo, outros aplicativos, área de trabalho ou permissões de câmera/microfone/localização.
 
@@ -18,7 +18,7 @@ Capture somente durante execução da tentativa ativa, com página visível, sem
 
 Todo item tem IDs de estudo/revisões/variante/sessão/tarefa/tentativa, `captureSchemaVersion`, `sequence`, `occurredAt`, `timelineMs` e `segmentId`. A sequência é persistida e desempata timestamps; `receivedAt` do servidor não substitui ordem nem duração.
 
-**Frame:** `frameId`, `screenId`, IDs dos bundles, `width`, `height` em CSS pixels da raiz sem escala, árvore sanitizada e `layoutKey` calculada pelo servidor. A árvore armazena tag permitida, atributos aprovados, filhos e `scrollTop/scrollLeft` de cada container rolável. A rolagem da raiz também é registrada. Informe quando viewport visual/teclado alterar o enquadramento.
+**Frame:** `frameId`, `screenId`, IDs dos bundles, `width`/`height` da área interna do produto, `viewport` da janela original (incluindo área visual), `region` com a posição da raiz, `crop` com o trecho visível, árvore sanitizada e `layoutKey` calculada pelo servidor. A referência atual usa captura versão 3; veja [viewport-and-css.md](viewport-and-css.md). A árvore armazena tag permitida, atributos aprovados, filhos e `scrollTop/scrollLeft` de cada container rolável. A rolagem da raiz também é registrada. Informe quando viewport visual/teclado alterar o enquadramento.
 
 **Point:** `pointId`, `frameId`, `screenId`, `x`, `y`, `kind: click|tap` e contexto/tempo da tentativa. Coordenadas são relativas ao viewport da raiz do frame. Para uma escala uniforme de prévia, `x = (clientX - rect.left) * frame.width / rect.width`, equivalente para y; capture/normalize no viewport de conteúdo, descontando borda quando existir. Rotação, skew ou transformações não uniformes exigem conversão inversa validada; não aplique essa fórmula silenciosamente.
 
@@ -40,7 +40,7 @@ Imagens/fontes usam registro de assets aprovados por chave; a árvore não envia
 
 Sanitize e valide novamente no servidor e no renderizador. Construção de DOM usa criação de elementos e `textContent`; nunca execute markup ou scripts enviados na captura.
 
-A [referência starter-2](approved-assets.md) implementa registro de imagens/fontes, CSS local incorporado, preservação de tags e espera por recursos/layout. A árvore transmite IDs aprovados de imagem, nunca URLs de campos ou uploads.
+A [referência starter-3](approved-assets.md) implementa registro de imagens/fontes, CSS local incorporado, preservação de tags e espera por recursos/layout. A árvore transmite IDs aprovados de imagem, nunca URLs de campos ou uploads.
 
 ## Persistência, limites e falhas
 
@@ -62,7 +62,7 @@ Envie frames antes dos pontos dependentes. Separe o estado de envio visual do es
 
 ## Mapa de cliques
 
-`layoutKey` é hash canônico calculado pelo servidor sobre revisão, variante, tela, bundles, dimensões e árvore sanitizada com todas as rolagens; exclua IDs/tempos da captura. Ordene chaves de objetos na serialização para que sua ordem não crie visualizações duplicadas. Não confie em hash do cliente para identidade/autorizações.
+`layoutKey` é hash canônico calculado pelo servidor sobre revisão, variante, tela, bundles, dimensões da raiz, janela original, área visual, posição, recorte e árvore sanitizada com todas as rolagens; exclua IDs/tempos da captura. Ordene chaves de objetos na serialização para que sua ordem não crie visualizações duplicadas. Não confie em hash do cliente para identidade/autorizações.
 
 Agrupe apenas visualizações exatas compatíveis, com filtros por estudo/revisão/variante/tarefa/tela/sessão e seletor de grupo visual. Não sobreponha coordenadas de tamanhos, rolagens ou layouts distintos. Exiba frame original e densidade de pontos, quantidade de cliques e número de sessões consideradas. Isso mede pontos recebidos, não olhar, atenção ou erro.
 
@@ -72,7 +72,7 @@ Paginação/limites retornam totais exatos separadamente da amostra de pontos/gr
 
 Carregue capturas somente ao abrir a reprodução autorizada. Ordene por sequência/segmento/tempo original, com pausa, velocidade, slider, seleção de tarefa e anterior/próxima captura. Conserve os intervalos observados; apresente pausas, lacunas e captura interrompida sem inventar movimento ou estados. A trilha visual pode usar tempo decorrido com lacunas explícitas; não a confunda com o tempo ativo da métrica de tarefa.
 
-Reconstrua com o bundle correspondente, restaure scroll dos containers após layout/fonts/assets e desenhe os pontos no mesmo sistema de coordenadas. Renderize em iframe inerte e isolado, com ações, formulários, navegação e rede bloqueados; não monte o aplicativo executável, não reenvie ações e não repita operações de negócio.
+Use no iframe o tamanho da janela original e recorte sua apresentação até a área visível do produto; não use a largura da raiz como largura da janela. Reconstrua com o bundle correspondente, restaure scroll dos containers após layout/fonts/assets e desenhe os pontos no mesmo sistema de coordenadas. Renderize em iframe inerte e isolado, com ações, formulários, navegação e rede bloqueados; não monte o aplicativo executável, não reenvie ações e não repita operações de negócio.
 
 Para iframe sandbox com origem opaca (`allow-scripts` sem `allow-same-origin`), `targetOrigin: "*"` pode ser necessário para enviar ao renderer. Nessa arquitetura, valide `event.source`, canal e nonce dedicado, esquema e contexto; envie somente capturas sanitizadas, nunca tokens, respostas ou credenciais. Isso é distinto da ponte entre site/protótipo com origens normais, que usa origem exata. Restrinja CSP: sem rede, formulários, navegação ou assets externos; fontes/imagens aprovadas incorporadas. Não conceda `allow-same-origin` para contornar a origem opaca.
 

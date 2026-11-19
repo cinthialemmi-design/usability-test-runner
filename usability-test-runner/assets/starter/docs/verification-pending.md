@@ -2,6 +2,11 @@
 
 Esta atualização foi feita com proibição explícita de retomar testes. Nenhuma caixa abaixo está concluída e não foi iniciado servidor, navegador ou piloto. Use esta lista quando a execução for autorizada.
 
+- [ ] Janela: produto de largura fixa em janela grande mantém os mesmos breakpoints e unidades `vw/vh` no replay.
+- [ ] Recorte: rolagem da página, produto parcialmente visível, teclado e orientação preservam origem/área visível sem deslocar pontos.
+- [ ] Agrupamento: mesma raiz/árvore com janelas ou recortes diferentes gera grupos visuais distintos; recorte informado pelo cliente é recalculado pelo servidor.
+- [ ] CSS: botões, campos, títulos, tabelas e classes comuns do produto conservam seus estilos ao adicionar os controles do estudo.
+- [ ] Isolamento: produto fora de `.utr-ui`, tokens separados e nenhum `runner.css` no bundle do replay; o exemplo funciona com seus próprios estilos.
 - [ ] Ordenação: durante o envio de um frame, gerar nova ação, concluir e responder; conferir que a ação chega antes da resposta e que o critério recebe toda a evidência.
 - [ ] Reentrada: pedidos de envio durante uma requisição são retomados; nenhum evento fica abandonado por `busy`.
 - [ ] Barreira: respostas/encerramento com contagem ou última sequência divergente são recusados, e o reenvio correto libera a finalização sem duplicar.

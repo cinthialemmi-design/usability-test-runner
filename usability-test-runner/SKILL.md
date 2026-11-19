@@ -53,6 +53,8 @@ Consentimento precede interações coletadas. Credenciais administrativas ficam 
 
 ## 4. Construir mapas e replay
 
+Leia [viewport-and-css.md](references/viewport-and-css.md) ao adaptar a apresentação. Registre janela original e área do produto separadamente, reproduza o iframe com a janela original e recorte somente a área capturada. Mantenha o produto fora das raízes `.utr-ui`; `brand.stylesheets` contém apenas CSS do produto, sem `runner.css`.
+
 Leia [visual-capture-and-replay.md](references/visual-capture-and-replay.md). Capture somente a raiz configurada do produto, com árvores sanitizadas, geometria, rolagem e pontos vinculados. Mascare campos e conteúdo derivado, inclusive resumos/atributos, antes da fila.
 
 Preserve os estilos/assets de cada revisão. Agrupe mapas por visualização compatível. O player reconstrói capturas em ambiente inerte, com pausa, velocidade e linha do tempo; não executa operações do produto. Proteja também seus endpoints e exportações. Sessões sem captura mostram indisponibilidade, sem replay inventado.

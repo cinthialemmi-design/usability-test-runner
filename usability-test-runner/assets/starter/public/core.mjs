@@ -4,7 +4,7 @@ export function canonical(value){
  return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';
 }
 export async function digest(value){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))].map(x=>x.toString(16).padStart(2,'0')).join('');}
-export async function groupKey(frame){return digest(canonical(Object.fromEntries(['captureSchemaVersion','screenId','width','height','prototypeRevision','variantId','brandBundleId','rendererBundleId','tree'].map(k=>[k,frame[k]]))));}
+export async function groupKey(frame){return digest(canonical(Object.fromEntries(['captureSchemaVersion','screenId','width','height','viewport','region','crop','prototypeRevision','variantId','brandBundleId','rendererBundleId','tree'].map(k=>[k,frame[k]]))));}
 export function evaluate(rule,events,state={},answers={}){
  if(!rule)return false;
  if(rule.all)return rule.all.every(r=>evaluate(r,events,state,answers));
@@ -22,7 +22,7 @@ export function sanitizeTree(tree,policy={},assets=[]){
  const texts=new Set(policy.staticTextAllowlist||[]),classes=new Set(policy.allowedClasses||[]);
  const images=new Set((assets||[]).filter(asset=>asset.kind==='image').map(asset=>asset.assetId));
  const masked=box=>{
-  const out={tag:'span',attrs:{class:'masked'},children:[{text:'Campo ocultado'}]};
+  const out={tag:'span',attrs:{class:'utr-masked'},children:[{text:'Campo ocultado'}]};
   if(box&&typeof box==='object'){
    out.box={};
    for(const key of ['width','height','marginTop','marginRight','marginBottom','marginLeft'])if(Number.isFinite(box[key]))out.box[key]=Math.round(Math.max(key.startsWith('margin')?-512:0,Math.min(key.startsWith('margin')?512:10000,box[key]))*100)/100;
@@ -34,7 +34,7 @@ export function sanitizeTree(tree,policy={},assets=[]){
   if(++count>1800||depth>30)throw Error('Limite de complexidade da captura.');
   if(!n||typeof n!=='object'||n.exclude)return null;
   if(Array.isArray(n))throw Error('Nó inválido.');
-  if(n.mask||HIDDEN_TAGS.has(n.tag)||n.tag==='span'&&n.attrs?.class==='masked')return masked(n.box);
+  if(n.mask||HIDDEN_TAGS.has(n.tag)||n.tag==='span'&&n.attrs?.class==='utr-masked')return masked(n.box);
   if(typeof n.text==='string'){
    const clean=n.text.trim();
    return {text:!clean?n.text:texts.has(clean)?n.text:'[Ocultado]'};
