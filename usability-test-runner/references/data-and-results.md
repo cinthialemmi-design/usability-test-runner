@@ -46,6 +46,8 @@ Mantenha fila local durável, por exemplo em IndexedDB, após consentimento, qua
 
 Reenvie com espera progressiva limitada, por exemplo até cinco tentativas consecutivas por lote. Depois, mantenha a fila e ofereça “Tentar enviar novamente”; não continue em loop nem descarte dados. Erro de validação/autorização exige correção ou renovação do acesso, sem reenvio cego. Não dependa exclusivamente do fechamento da aba, `unload` ou `sendBeacon`.
 
+Antes de enviar uma resposta final ou encerrar, esvazie novamente as filas após cada requisição visual; novas ações podem ter chegado durante o envio. No starter-2, o servidor verifica `eventBarrier: {count,lastSequence}` contra eventos persistidos. A resposta não pode ultrapassar sua evidência e chamadas de envio concorrentes não podem ser descartadas.
+
 Estados mostrados ao participante: **salvo neste aparelho**, **envio pendente**, **recebido**, **falha no envio**. “Recebido” depende de confirmação durável. Estudo concluído e envio concluído são estados diferentes. Offline pode preservar eventos; não garante que assets externos carreguem. Cache offline/PWA é extensão solicitada, com testes próprios.
 
 ## Resultado da tarefa

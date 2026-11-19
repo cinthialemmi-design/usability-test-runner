@@ -3,6 +3,7 @@ import {fileURLToPath} from 'node:url';
 import {resolve, relative, sep} from 'node:path';
 import {createHash} from 'node:crypto';
 import {assertProfile} from './server/profile.mjs';
+import {compileAssets} from './server/assets.mjs';
 
 export const ROOT = fileURLToPath(new URL('./', import.meta.url));
 export function buildStudy() {
@@ -10,13 +11,8 @@ export function buildStudy() {
   assertProfile(cfg);
   const publicDir = resolve(ROOT,'public'), out = resolve(ROOT,'dist');
   const inside = p => { const path = realpathSync(p); if (!path.startsWith(realpathSync(publicDir)+sep)) throw Error('Asset fora de public.'); return path; };
-  const styles = cfg.brand.stylesheets.map(path => {
-    if (!/^\/[\w/.-]+\.css$/.test(path) || path.includes('..')) throw Error('Folha de estilos precisa ser local.');
-    const css = readFileSync(inside(resolve(publicDir,'.'+path)),'utf8');
-    // Reference profile intentionally has no remote resources in the frozen renderer.
-    if (/url\s*\(|@import|<\//i.test(css)) throw Error('Use CSS sem url()/@import no perfil inicial; incorpore assets por extensão explícita.');
-    return css;
-  }).join('\n');
+  const resources=compileAssets(publicDir,cfg.brand),styles=resources.styles;
+  cfg.brand.assets=resources.manifest;
   if (!existsSync(inside(resolve(publicDir,cfg.prototype.adapter)))) throw Error('Adaptador não encontrado.');
   const core = readFileSync(resolve(publicDir,'core.mjs'),'utf8').replaceAll('export ','');
   const player = readFileSync(resolve(publicDir,'renderer.mjs'),'utf8');
@@ -24,9 +20,9 @@ export function buildStudy() {
   cfg.brand.bundleId = 'brand-'+stamp;
   cfg.visual.rendererBundleId = 'renderer-'+stamp;
   cfg.visual.rendererBundle = 'replay/'+stamp+'.html';
-  const renderConfig = {prototypeRevision:cfg.prototypeRevision,brand:cfg.brand,prototype:{rootSelector:cfg.prototype.rootSelector},visual:cfg.visual};
+  const renderConfig = {prototypeRevision:cfg.prototypeRevision,brand:{...cfg.brand,assets:resources.rendererAssets},prototype:{rootSelector:cfg.prototype.rootSelector},visual:cfg.visual};
   const encoded = JSON.stringify(renderConfig).replaceAll('<','\\u003c');
-  const renderer = `<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'; img-src 'none'"><title>Reconstrução do protótipo</title><style>${styles}\nhtml,body{margin:0;padding:0;overflow:hidden;background:var(--surface)}.prototype-root{margin:0;border:0;border-radius:0;pointer-events:none}*{animation:none!important;transition:none!important;caret-color:transparent!important}</style><body><script>const CFG=${encoded};\n${core}\n${player}</script></body></html>`;
+  const renderer = `<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; form-action 'none'; base-uri 'none'; img-src data:; font-src data:"><title>Reconstrução do protótipo</title><style>${styles}\nhtml,body{margin:0;padding:0;overflow:hidden;background:var(--surface)}.prototype-root{margin:0;border:0;border-radius:0;pointer-events:none}*{animation:none!important;transition:none!important;caret-color:transparent!important}</style><body><script>const CFG=${encoded};\n${core}\n${player}</script></body></html>`;
   const files = {};
   function visit(dir) {
     for (const entry of readdirSync(dir,{withFileTypes:true})) {
@@ -39,7 +35,10 @@ export function buildStudy() {
       }
     }
   }
-  visit(publicDir); files['/'] = files['/index.html'];
+  visit(publicDir);
+  Object.assign(files,resources.files);
+  for(const [path,body]of resources.stylesheets)files[path]={body,mime:'text/css; charset=utf-8'};
+  files['/'] = files['/index.html'];
   files['/'+cfg.visual.rendererBundle] = {body:renderer,mime:'text/html; charset=utf-8'};
   mkdirSync(out,{recursive:true});
   writeFileSync(resolve(out,'files.json'),JSON.stringify(files));

@@ -17,6 +17,8 @@ try {
   const root=document.querySelector('#prototype-mount');root.id=config.prototype.rootSelector.slice(1);
   const {createAdapter}=await import('/'+config.prototype.adapter);
   const adapter=createAdapter(root,{config});adapter.render();adapter.stop();
+  await Promise.all(config.brand.assets.filter(asset=>asset.kind==='image').map(asset=>{const image=new Image();image.src=asset.path;return image.decode();}));
+  root.getBoundingClientRect();await document.fonts.ready;
   await runStudy({config,adapter,root});
 } catch (error) {
   document.querySelector('#sync-status').textContent='Não foi possível abrir o estudo: '+error.message;

@@ -4,7 +4,7 @@ export function canonical(value){
  return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';
 }
 export async function digest(value){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))].map(x=>x.toString(16).padStart(2,'0')).join('');}
-export async function groupKey(frame){return digest(canonical(Object.fromEntries(['screenId','width','height','prototypeRevision','variantId','brandBundleId','rendererBundleId','tree'].map(k=>[k,frame[k]]))));}
+export async function groupKey(frame){return digest(canonical(Object.fromEntries(['captureSchemaVersion','screenId','width','height','prototypeRevision','variantId','brandBundleId','rendererBundleId','tree'].map(k=>[k,frame[k]]))));}
 export function evaluate(rule,events,state={},answers={}){
  if(!rule)return false;
  if(rule.all)return rule.all.every(r=>evaluate(r,events,state,answers));
@@ -14,10 +14,13 @@ export function evaluate(rule,events,state={},answers={}){
  if(rule.event){const r=rule.event;return events.some(e=>e.type===r.type&&(!r.screenId||e.screenId===r.screenId)&&(!r.actionId||e.payload?.actionId===r.actionId)&&Object.entries(r.where||{}).every(([k,v])=>e.payload?.[k]===v));}
  return false;
 }
-const SAFE_TAGS=new Set('div span p h1 h2 h3 h4 small strong b em section article header footer nav main form ul ol li dl dt dd button label fieldset legend br hr'.split(' '));
+const SAFE_TAGS=new Set('div span p h1 h2 h3 h4 h5 h6 small strong b i em s u section article aside header footer nav main form a img figure figcaption blockquote code pre table thead tbody tfoot tr th td caption colgroup col ul ol li dl dt dd button label fieldset legend br hr'.split(' '));
 const HIDDEN_TAGS=new Set(['input','textarea','select','option']);
-export function sanitizeTree(tree,policy={}){
- let count=0;const texts=new Set(policy.staticTextAllowlist||[]),classes=new Set(policy.allowedClasses||[]);
+const BLOCKED_ATTRIBUTES=/^(?:on|src|href|srcset|style|action|formaction|method|target|value|name|contenteditable)/i;
+export function sanitizeTree(tree,policy={},assets=[]){
+ let count=0;
+ const texts=new Set(policy.staticTextAllowlist||[]),classes=new Set(policy.allowedClasses||[]);
+ const images=new Set((assets||[]).filter(asset=>asset.kind==='image').map(asset=>asset.assetId));
  const masked=box=>{
   const out={tag:'span',attrs:{class:'masked'},children:[{text:'Campo ocultado'}]};
   if(box&&typeof box==='object'){
@@ -32,16 +35,34 @@ export function sanitizeTree(tree,policy={}){
   if(!n||typeof n!=='object'||n.exclude)return null;
   if(Array.isArray(n))throw Error('Nó inválido.');
   if(n.mask||HIDDEN_TAGS.has(n.tag)||n.tag==='span'&&n.attrs?.class==='masked')return masked(n.box);
-  if(typeof n.text==='string'){const clean=n.text.trim();return {text:!clean?' ':texts.has(clean)?clean:'[Ocultado]'};}
+  if(typeof n.text==='string'){
+   const clean=n.text.trim();
+   return {text:!clean?n.text:texts.has(clean)?n.text:'[Ocultado]'};
+  }
   if(!SAFE_TAGS.has(n.tag))return null;
-  const out={tag:n.tag==='form'?'div':n.tag,attrs:{},children:[]},a=n.attrs||{};
-  if(typeof a.id==='string'&&(policy.allowedIds||[]).includes(a.id))out.attrs.id=a.id;
-  if(typeof a.class==='string'){const cls=a.class.split(/\s+/).filter(c=>classes.has(c));if(cls.length)out.attrs.class=cls.join(' ');}
-  for(const k of ['role','aria-label'])if(typeof a[k]==='string'&&texts.has(a[k]))out.attrs[k]=a[k];
-  if(a.hidden===true||a.hidden==='')out.attrs.hidden=true;
-  if(a.disabled===true||a.disabled==='')out.attrs.disabled=true;
-  for(const k of ['scrollTop','scrollLeft'])if(Number.isFinite(n[k]))out[k]=Math.max(0,Math.min(100000,Math.round(n[k])));
-  for(const child of Array.isArray(n.children)?n.children:[]){const c=walk(child,depth+1);if(c)out.children.push(c);}
+  if(n.tag==='img'&&!images.has(n.assetId))return masked(n.box);
+  // Preserve form/a and other layout semantics. Behavioral attributes are
+  // removed; the renderer separately blocks interaction, submission and network.
+  const out={tag:n.tag,attrs:{},children:[]},attrs=n.attrs||{};
+  if(n.tag==='img')out.assetId=n.assetId;
+  if(typeof attrs.id==='string'&&(policy.allowedIds||[]).includes(attrs.id))out.attrs.id=attrs.id;
+  if(typeof attrs.class==='string'){
+   const approved=attrs.class.split(/\s+/).filter(name=>classes.has(name));
+   if(approved.length)out.attrs.class=approved.join(' ');
+  }
+  for(const key of ['role','aria-label','alt'])if(typeof attrs[key]==='string'&&texts.has(attrs[key]))out.attrs[key]=attrs[key];
+  if(attrs.hidden===true||attrs.hidden==='')out.attrs.hidden=true;
+  if(attrs.disabled===true||attrs.disabled==='')out.attrs.disabled=true;
+  for(const key of ['width','height','colspan','rowspan']){
+   const value=attrs[key];
+   if(typeof value==='string'&&/^\d{1,5}$/.test(value)&&Number(value)<=10000)out.attrs[key]=value;
+  }
+  for(const [key,values]of Object.entries(policy.allowedAttributes||{})){
+   if(!/^[a-z][a-z0-9-]*$/.test(key)||BLOCKED_ATTRIBUTES.test(key))continue;
+   if(Array.isArray(values)&&typeof attrs[key]==='string'&&values.includes(attrs[key]))out.attrs[key]=attrs[key];
+  }
+  for(const key of ['scrollTop','scrollLeft'])if(Number.isFinite(n[key]))out[key]=Math.max(0,Math.min(100000,Math.round(n[key])));
+  for(const child of Array.isArray(n.children)?n.children:[]){const clean=walk(child,depth+1);if(clean)out.children.push(clean);}
   return out;
  }
  return walk(tree,0);

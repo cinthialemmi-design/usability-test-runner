@@ -3,7 +3,7 @@
 export function assertProfile(c) {
   const need = (ok, message) => { if (!ok) throw Error('Configuração: ' + message); };
   const identifier = x => typeof x === 'string' && /^[a-zA-Z0-9_.:-]{1,100}$/.test(x) && !['__proto__','constructor','prototype'].includes(x);
-  need(c.schemaVersion === '2' && c.runtimeProfile === 'starter-1', 'use schemaVersion 2 e runtimeProfile starter-1.');
+  need(c.schemaVersion === '2' && c.runtimeProfile === 'starter-2', 'use schemaVersion 2 e runtimeProfile starter-2.');
   need(c.collectionMode === 'connected' && c.collectorEndpoint === '/api', 'este servidor usa coleta conectada em /api.');
   need(['pilot','live'].includes(c.environment), 'environment deve ser pilot ou live.');
   for (const k of ['studyId','studyRevision','prototypeRevision']) need(identifier(c[k]), k + ' inválido.');
@@ -62,6 +62,7 @@ export function assertProfile(c) {
     need(!manual(t.successCriterion)||t.manualReview===true, 'critério manual exige manualReview.');
   });
   need(c.visual && typeof c.visual.enabled === 'boolean', 'configuração visual obrigatória.');
+  need(c.visual.captureSchemaVersion === '2', 'este perfil exige captura visual versão 2.');
   need(!c.visual.heatmaps || c.visual.enabled, 'mapas exigem captura habilitada.');
   need(!c.visual.replay || c.visual.enabled, 'replay exige captura habilitada.');
   const p = c.visual.privacy;
@@ -69,6 +70,17 @@ export function assertProfile(c) {
   for (const k of ['staticTextAllowlist','maskSelectors','excludeSelectors','allowedClasses','allowedIds']) need(Array.isArray(p[k]) && p[k].every(x => typeof x === 'string'), 'lista de privacidade ausente: ' + k);
   for (const k of ['maxFrames','maxPoints','maxTreeBytes']) need(Number.isInteger(c.visual.limits?.[k]) && c.visual.limits[k] > 0, 'limite inválido: ' + k);
   need(Array.isArray(c.brand?.stylesheets) && c.brand.stylesheets.length, 'brand.stylesheets obrigatório.');
+  need(Array.isArray(c.brand.assets), 'brand.assets deve listar imagens/fontes aprovadas, mesmo que vazio.');
+  catalog(c.brand.assets, 'assetId');
+  need(new Set(c.brand.assets.map(asset=>asset.path)).size===c.brand.assets.length, 'caminhos de assets duplicados.');
+  for(const asset of c.brand.assets){
+    need(['image','font'].includes(asset.kind), 'asset.kind deve ser image ou font.');
+    need(typeof asset.path==='string'&&/^\/[a-zA-Z0-9_./-]+$/.test(asset.path)&&!asset.path.includes('..'), 'asset.path exige um caminho local sem consulta, espaço ou travessia.');
+  }
+  if(p.allowedAttributes)for(const [key,values]of Object.entries(p.allowedAttributes)){
+    need(/^[a-z][a-z0-9-]*$/.test(key)&&!/^(?:on|src|href|srcset|style|action|formaction|method|target|value|name|contenteditable)/i.test(key), 'atributo visual não permitido.');
+    need(Array.isArray(values)&&values.every(value=>typeof value==='string'), 'valores estáticos de atributo obrigatórios.');
+  }
 }
 
 export function participantConfig(config) {

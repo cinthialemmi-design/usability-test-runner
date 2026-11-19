@@ -4,7 +4,7 @@ export function createAdapter(root,{config}){
  let listener=()=>{};const notify=event=>listener(event);
  let state=initial(),confirming=false;
  const selected=()=>rooms.find(r=>r.id===state.selectedRoomId)||rooms[0];
- const header=()=>'<header class="product-header"><span class="brand">'+esc(config.brand.label||config.title)+'</span><span>Espaços para boas conversas.</span></header><nav class="product-nav"><button data-go="rooms" class="'+(state.screenId==='rooms'?'active':'')+'">Salas</button><button data-go="reservations" class="'+(['reservations','confirmed','cancelled'].includes(state.screenId)?'active':'')+'">Minhas reservas</button></nav>';
+ const header=()=>'<header class="product-header"><img class="brand-mark" src="/prototype/assets/rooms-mark.svg" width="36" height="36" alt="Marca do exemplo de salas"><span class="brand">'+esc(config.brand.label||config.title)+'</span><span>Espaços para boas conversas.</span></header><nav class="product-nav"><button data-go="rooms" class="'+(state.screenId==='rooms'?'active':'')+'">Salas</button><button data-go="reservations" class="'+(['reservations','confirmed','cancelled'].includes(state.screenId)?'active':'')+'">Minhas reservas</button></nav>';
  const schedule=()=>'<div class="schedule"><span>Amanhã (exemplo)</span><span>14:00 — 15:00</span></div>';
  const roomMeta=r=>'<p class="room-meta">'+r.capacity+' pessoas · '+(r.video?'Vídeo e tela':'Tela')+'</p>';
  const summary=()=>'<div class="summary"><h3>'+esc(selected().name)+'</h3>'+schedule()+(state.booking?.title?'<p data-user-content title="'+esc(state.booking.title)+'">'+esc(state.booking.title)+'</p>':'')+'</div>';

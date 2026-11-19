@@ -2,6 +2,13 @@
 
 Esta atualização foi feita com proibição explícita de retomar testes. Nenhuma caixa abaixo está concluída e não foi iniciado servidor, navegador ou piloto. Use esta lista quando a execução for autorizada.
 
+- [ ] Ordenação: durante o envio de um frame, gerar nova ação, concluir e responder; conferir que a ação chega antes da resposta e que o critério recebe toda a evidência.
+- [ ] Reentrada: pedidos de envio durante uma requisição são retomados; nenhum evento fica abandonado por `busy`.
+- [ ] Barreira: respostas/encerramento com contagem ou última sequência divergente são recusados, e o reenvio correto libera a finalização sem duplicar.
+- [ ] Formulários: conferir que os seletores CSS e as dimensões dos botões se mantêm no replay, sem submissão ou navegação.
+- [ ] Assets: conferir SVG, imagem de fundo, fonte, `@font-face`, `@import` relativo e `image-set`, com os mesmos bytes da revisão no participante e no replay.
+- [ ] Falhas: imagem/fonte ausente, tipo incompatível, importação circular, URL externa e arquivo não aprovado são recusados ou sinalizados sem reconstrução fictícia.
+- [ ] Player: fonte/imagem com carregamento demorado e atualização de tempo contínua não deslocam pontos, não remontam a mesma árvore e não deixam uma renderização antiga sobrescrever a atual.
 - [ ] Inicialização com Node.js 24+, migração e reinício preservando dados; configuração diferente recusa o banco antigo.
 - [ ] Recusar consentimento não cria sessão nem envia interações; aceitar registra as versões corretas.
 - [ ] Uma sessão completa abre tarefa, interage no produto, responde, recebe confirmação durável e aparece no painel.

@@ -13,13 +13,15 @@ O pacote agora inclui [um projeto de referência completo](usability-test-runner
 - Painel privado com resultados, avaliação humana, paginação, exclusão e exportação CSV/JSON.
 - Mapas por tarefa, tela, participação e visualização compatível.
 - Replay isolado com reprodução, pausa, velocidade e linha do tempo.
+- Tags estruturais preservadas e imagens/fontes aprovadas incorporadas por revisão.
+- Confirmação da quantidade e ordem dos eventos antes de aceitar respostas finais.
 - Configuração e adaptador de produto separados do motor; reserva de salas como exemplo substituível.
 
-A referência usa Node.js 24+, sem dependências externas, e inclui migrações, configuração de ambiente e Dockerfile. Copie `usability-test-runner/assets/starter/` para seu projeto e siga seu README. Hospedagem do receptor requer servidor e armazenamento persistente; GitHub Pages sozinho não atende a coleta.
+A referência usa Node.js 24+, SQLite e bibliotecas de CSS com versões travadas; inclui migrações, configuração de ambiente e Dockerfile. Copie `usability-test-runner/assets/starter/` para seu projeto e siga seu README. Hospedagem do receptor requer servidor e armazenamento persistente; GitHub Pages sozinho não atende a coleta.
 
 **Estado desta atualização: implementação preparada; execução e validação pendentes.** Por solicitação do usuário, não foram iniciados testes, servidor ou novo piloto. O código publicado não deve ser confundido com um estudo hospedado ou coleta verificada. Consulte a [lista pendente](usability-test-runner/assets/starter/docs/verification-pending.md).
 
-O perfil inicial suporta uma variante fixa e uma instalação por estudo/revisão/ambiente. Randomização, conclusão automática, imagens/fontes, ponte entre origens e multiestudo exigem extensão explícita; veja [capacidades e limites](usability-test-runner/assets/starter/README.md#perfil-implementado-e-limites).
+O perfil inicial suporta uma variante fixa e uma instalação por estudo/revisão/ambiente. Imagens/fontes locais aprovadas e CSS com `url()`/`@import` estão incluídos. Randomização, conclusão automática, ponte entre origens e multiestudo exigem extensão explícita. O perfil atual é `starter-2`, com captura visual versão 2; veja [capacidades e limites](usability-test-runner/assets/starter/README.md#perfil-implementado-e-limites).
 
 ## Instalar no Codex
 

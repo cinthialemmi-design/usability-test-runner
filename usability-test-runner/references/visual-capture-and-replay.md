@@ -30,7 +30,7 @@ Snapshot não é gravação contínua: estados intermediários de animação pod
 
 ## Sanitização e conteúdo derivado
 
-Antes de persistir/enviar, serialize uma árvore estruturada aprovada; não use HTML bruto. Limite tags, atributos, tamanho, quantidade de nós e profundidade. Remova scripts, handlers `on*`, conteúdo executável, links, URLs de rede e edição. Atributos de estilo aceitam somente propriedades/valores previamente permitidos; não aceitam `url()`, `@import`, expressão ou CSS arbitrário.
+Antes de persistir/enviar, serialize uma árvore estruturada aprovada; não use HTML bruto. Limite tags, atributos, tamanho, quantidade de nós e profundidade. Remova scripts, handlers `on*`, conteúdo executável, destinos de links, URLs de rede e edição. Preserve tags estruturais como `form` e `a`; impeça seu comportamento separadamente, sem quebrar seletores CSS. Atributos de estilo aceitam somente propriedades/valores previamente permitidos; não aceitam `url()`, `@import`, expressão ou CSS arbitrário.
 
 Mascarar `input.value` não basta. O mesmo conteúdo pode aparecer em resumo, erro, título, `aria-label`, `title`, `data-*`, ID ou classe. Por padrão, inclua somente textos estáticos/fixtures não pessoais aprovados em `staticTextAllowlist`; todo outro texto fica oculto. Use `maskSelectors` para ocultar subárvores pessoais/derivadas e seus atributos, e `excludeSelectors` para omitir áreas. Marcação de exclusão prevalece sobre qualquer permissão de texto.
 
@@ -39,6 +39,8 @@ Campos de entrada são substituídos por elementos inertes com placeholder neutr
 Imagens/fontes usam registro de assets aprovados por chave; a árvore não envia `src`, `href`, dados pessoais ou URLs temporárias. O renderer resolve as chaves no bundle imutável. Assets pessoais carregados pelo participante não entram automaticamente no registro. Também avalie se imagens estáticas contêm dados pessoais antes de aprová-las.
 
 Sanitize e valide novamente no servidor e no renderizador. Construção de DOM usa criação de elementos e `textContent`; nunca execute markup ou scripts enviados na captura.
+
+A [referência starter-2](approved-assets.md) implementa registro de imagens/fontes, CSS local incorporado, preservação de tags e espera por recursos/layout. A árvore transmite IDs aprovados de imagem, nunca URLs de campos ou uploads.
 
 ## Persistência, limites e falhas
 

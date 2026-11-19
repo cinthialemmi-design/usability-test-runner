@@ -19,10 +19,12 @@ function clearPrivateView() {
 function stage(id,frame,dots,mode) {
   const host=$(id),iframe=host.querySelector('iframe');let state=stageStates.get(iframe);
   if (!state) {state={nonce:null,data:null};stageStates.set(iframe,state);}
-  host.hidden=!frame;state.data=frame?{frame,points:dots,mode}:null;if(!frame)return;
+  host.hidden=!frame;state.data=frame?{frame,points:dots,mode}:null;if(!frame){state.signature=null;return;}
   const width=Math.min(host.parentElement.clientWidth,430,frame.width),scale=width/frame.width;
   host.style.width=width+'px';host.style.height=frame.height*scale+'px';
   iframe.style.width=frame.width+'px';iframe.style.height=frame.height+'px';iframe.style.transformOrigin='top left';iframe.style.transform='scale('+scale+')';
+  const signature=[frame.frameId,mode,dots.length,dots.at(-1)?.pointId||''].join(':');
+  if(state.signature===signature&&state.nonce)return;state.signature=signature;
   if(state.nonce)iframe.contentWindow.postMessage({type:'usability-frame',nonce:state.nonce,...state.data},'*');
   else iframe.contentWindow.postMessage({type:'usability-renderer-init'},'*');
 }

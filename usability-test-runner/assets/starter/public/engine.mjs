@@ -3,7 +3,7 @@ import {ackResult,recoverSession,finalizeLocal,visibleClock} from './session-sta
 const esc=x=>String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export async function runStudy({config,adapter,root}){
  const cfg=config,storageKey='usability:'+cfg.studyId+':'+cfg.studyRevision+':'+cfg.prototypeRevision+':'+cfg.environment,dialog=document.querySelector('#study-dialog'),toolbar=document.querySelector('#study-controls'),status=document.querySelector('#sync-status');
- let S=null,saved=null,modalOpen=false,busy=false,lastTick=performance.now(),retryCount=0,retryTimer,visualWarning='',storageError=false,clockId;
+ let S=null,saved=null,modalOpen=false,busy=false,flushAgain=false,lastTick=performance.now(),retryCount=0,retryTimer,visualWarning='',storageError=false,clockId;
  const timing=visibleClock(()=>performance.now(),!document.hidden);
  try{saved=JSON.parse(localStorage.getItem(storageKey)||'null');if(saved&&Date.now()-saved.timelineOrigin>cfg.consent.retentionDays*86400000){localStorage.removeItem(storageKey);saved=null;}}catch{}
  const currentTask=()=>cfg.tasks[S?.taskIndex||0];
@@ -11,30 +11,77 @@ export async function runStudy({config,adapter,root}){
  const executing=()=>S?.phase==='running'&&!modalOpen&&!(currentTask()?.timing?.excludeScreens||[]).includes(S?.timingScreen||adapter.getScreen());
  function tick(){const delta=timing.sample(executing());if(S)S.visibleMs+=delta;}
  const allowed=()=>cfg.visual.enabled&&S?.phase==='running'&&!modalOpen&&!document.hidden&&!S.visualDisabled;
- function context(){return {taskId:currentTask().taskId,attemptId:S.attemptId,screenId:adapter.getScreen(),prototypeRevision:cfg.prototypeRevision,variantId:S.session.variantId,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,timelineMs:Math.max(0,Date.now()-S.timelineOrigin),segmentId:S.segmentId,sequence:++S.sequence};}
+ function context(){return {taskId:currentTask().taskId,attemptId:S.attemptId,screenId:adapter.getScreen(),prototypeRevision:cfg.prototypeRevision,variantId:S.session.variantId,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,captureSchemaVersion:cfg.visual.captureSchemaVersion,timelineMs:Math.max(0,Date.now()-S.timelineOrigin),segmentId:S.segmentId,sequence:++S.sequence};}
  function enqueue(kind,item){const queue=kind==='frame'?S.frames:S.points;if(S.visualDisabled||queue.length>=(kind==='frame'?6:300)){S.captureIncomplete=true;visualWarning='Captura visual aguardando envio; novas capturas pausadas.';update();return false;}queue.push(item);save();schedule();return true;}
  const capture=createCapture({root,config:cfg,allowed,context,enqueue,onWarning:message=>{if(S){S.captureIncomplete=true;S.visualDisabled=true;save();}visualWarning=message;update();}});
- function record(event){if(S?.phase!=='running'||modalOpen||document.hidden)return;if(S.events.length>=500){tick();S.phase='paused';S.lastError='Fila de eventos cheia. Reconecte e envie os registros antes de continuar.';save();update();return;}tick();S.timingScreen=event.screenId||adapter.getScreen();S.events.push({id:crypto.randomUUID(),taskId:currentTask().taskId,attemptId:S.attemptId,sequence:++S.sequence,type:event.type,screenId:event.screenId||adapter.getScreen(),payload:event.payload||{},timelineMs:Math.max(0,Date.now()-S.timelineOrigin)});save();schedule();update();}
+ function appendEvent(event){
+  const item={id:crypto.randomUUID(),taskId:currentTask().taskId,attemptId:S.attemptId,sequence:++S.sequence,type:event.type,screenId:event.screenId||adapter.getScreen(),payload:event.payload||{},timelineMs:Math.max(0,Date.now()-S.timelineOrigin)};
+  S.events.push(item);
+  S.attemptEventCount=(S.attemptEventCount||0)+1;S.lastAttemptEventSequence=item.sequence;
+  S.totalEventCount=(S.totalEventCount||0)+1;S.lastSessionEventSequence=item.sequence;
+ }
+ function record(event){
+  if(S?.phase!=='running'||modalOpen||document.hidden)return;
+  if(S.events.length>=500){tick();S.phase='paused';S.lastError='Fila de eventos cheia. Reconecte e envie os registros antes de continuar.';save();update();return;}
+  tick();S.timingScreen=event.screenId||adapter.getScreen();appendEvent(event);save();schedule();update();
+ }
  async function api(path,method='GET',body,authenticated=true){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000),token=S?.writeToken||saved?.writeToken;try{const r=await fetch(cfg.collectorEndpoint+path,{method,cache:'no-store',credentials:'same-origin',headers:{'Content-Type':'application/json',...(authenticated&&token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:controller.signal});const data=await r.json();if(!r.ok)throw Object.assign(Error(data.error||'Falha de envio.'),{status:r.status});return data;}finally{clearTimeout(timer);}}
  function schedule(delay=500){clearTimeout(retryTimer);if(retryCount<5)retryTimer=setTimeout(flush,delay);}
- async function flush(){
-  if(busy||!S||['finished','stopped'].includes(S.phase))return;busy=true;update();
-  try{
-   while(S.events.length){const items=S.events.slice(0,50),reply=await api('/sessions/'+S.session.id+'/events','POST',{items});const ids=new Set(reply.receivedIds);S.events=S.events.filter(e=>!ids.has(e.id));save();}
-   while(S.frames.length||S.points.length){
-    const frames=S.frames.slice(0,1),pending=new Set(S.frames.map(f=>f.frameId)),points=S.points.filter(p=>!pending.has(p.frameId)||frames.some(f=>f.frameId===p.frameId)).slice(0,50);
-    if(!frames.length&&!points.length)throw Error('Captura sem tela correspondente.');
-    try{const reply=await api('/sessions/'+S.session.id+'/visuals','POST',{frames,points});const fi=new Set(reply.receivedFrameIds),pi=new Set(reply.receivedPointIds);S.frames=S.frames.filter(f=>!fi.has(f.frameId));S.points=S.points.filter(p=>!pi.has(p.pointId));save();}
-    catch(error){if([400,413].includes(error.status)||error.status===409&&/limite/i.test(error.message)){S.captureIncomplete=true;S.visualDisabled=true;visualWarning='Captura parcial: '+error.message;S.frames=[];S.points=[];save();break;}throw error;}
+ const sessionBarrier=()=>({count:S.totalEventCount||0,lastSequence:S.lastSessionEventSequence||0});
+ async function drainQueues(){
+  // Re-check events after EVERY awaited visual request. New interactions may have
+  // arrived while an image/frame was in flight; they precede any final response.
+  while(S.events.length||S.frames.length||S.points.length){
+   if(S.events.length){
+    const items=S.events.slice(0,50),reply=await api('/sessions/'+S.session.id+'/events','POST',{items});
+    const ids=new Set(reply.receivedIds);
+    if(!items.every(item=>ids.has(item.id)))throw Error('O servidor não confirmou todos os eventos.');
+    S.events=S.events.filter(item=>!ids.has(item.id));save();continue;
    }
-   if(S.pendingResult){const result=await api('/sessions/'+S.session.id+'/results','POST',{...S.pendingResult,captureIncomplete:!!S.captureIncomplete});S=ackResult(S,result,cfg.tasks.length);save();
+   const frames=S.frames.slice(0,1),pending=new Set(S.frames.map(frame=>frame.frameId));
+   const points=S.points.filter(point=>!pending.has(point.frameId)||frames.some(frame=>frame.frameId===point.frameId)).slice(0,50);
+   if(!frames.length&&!points.length)throw Error('Captura sem tela correspondente.');
+   try{
+    const reply=await api('/sessions/'+S.session.id+'/visuals','POST',{frames,points});
+    const frameIds=new Set(reply.receivedFrameIds),pointIds=new Set(reply.receivedPointIds);
+    if(!frames.every(frame=>frameIds.has(frame.frameId))||!points.every(point=>pointIds.has(point.pointId)))throw Error('O servidor não confirmou toda a captura.');
+    S.frames=S.frames.filter(frame=>!frameIds.has(frame.frameId));S.points=S.points.filter(point=>!pointIds.has(point.pointId));save();
+   }catch(error){
+    if([400,413].includes(error.status)||error.status===409&&/limite/i.test(error.message)){
+     S.captureIncomplete=true;S.visualDisabled=true;visualWarning='Captura parcial: '+error.message;S.frames=[];S.points=[];save();
+    }else throw error;
+   }
+  }
+ }
+ async function flush(){
+  if(busy){flushAgain=true;return;}
+  if(!S||['finished','stopped'].includes(S.phase))return;
+  busy=true;flushAgain=false;update();
+  try{
+   await drainQueues();
+   if(S.pendingResult){
+    // Questionnaire/sync phases freeze interaction. Re-drain after the await
+    // above so a response can never overtake its evidence.
+    await drainQueues();
+    const result=await api('/sessions/'+S.session.id+'/results','POST',{...S.pendingResult,captureIncomplete:!!S.captureIncomplete});
+    S=ackResult(S,result,cfg.tasks.length);save();
     if(!S.finishPending&&!S.stopPending)prepare();
    }
-   if(S.stopPending){await api('/sessions/'+S.session.id+'/stop','POST',{captureIncomplete:!!S.captureIncomplete});S=finalizeLocal(S,'stopped');save();showFinished();}
-   else if(S.finishPending){await api('/sessions/'+S.session.id+'/finish','POST',{captureIncomplete:!!S.captureIncomplete});S=finalizeLocal(S,'finished');save();showFinished();}
+   if(S.stopPending||S.finishPending){
+    await drainQueues();
+    const stopped=S.stopPending;
+    await api('/sessions/'+S.session.id+(stopped?'/stop':'/finish'),'POST',{captureIncomplete:!!S.captureIncomplete,eventBarrier:sessionBarrier()});
+    S=finalizeLocal(S,stopped?'stopped':'finished');save();showFinished();
+   }
    retryCount=0;S.lastError='';if(!S.captureIncomplete)visualWarning='';save();
-  }catch(error){S.lastError=error.status?error.message:(storageError?'Sem conexão e sem persistência local; mantenha a página aberta.':'Sem conexão. Registros salvos neste aparelho.');retryCount++;if(![400,401,403].includes(error.status))schedule(Math.min(10000,1500*retryCount));save();}
-  finally{busy=false;update();}
+  }catch(error){
+   S.lastError=error.status?error.message:(storageError?'Sem conexão e sem persistência local; mantenha a página aberta.':'Sem conexão. Registros salvos neste aparelho.');
+   retryCount++;if(![400,401,403].includes(error.status))schedule(Math.min(10000,1500*retryCount));save();
+  }finally{
+   busy=false;update();
+   // A retry/online/timer call during an active upload is retained, not lost.
+   if(flushAgain&&retryCount===0)schedule(0);
+  }
  }
  function close(){if(dialog.open)dialog.close();timing.sample(false);modalOpen=false;lastTick=performance.now();}
  function modal(title,body,buttons){tick();modalOpen=true;adapter.stop();capture.pause();if(dialog.open)dialog.close();dialog.innerHTML='<h2 id="dialog-title">'+esc(title)+'</h2>'+body+'<p class="dialog-error" role="alert"></p><div class="actions">'+buttons.map(b=>'<button data-control="'+b.id+'" class="'+(b.primary?'primary':'secondary')+'">'+esc(b.label)+'</button>').join('')+'</div>';dialog.showModal();return dialog;}
@@ -48,7 +95,7 @@ export async function runStudy({config,adapter,root}){
   if(active){adapter.start();if(S.frames.length<6&&!S.visualDisabled)requestAnimationFrame(()=>capture.capture());}else adapter.stop();
  }
  function instructions(isReady=false){const task=currentTask();const d=modal(task.title,'<p>'+esc(task.scenario)+'</p>'+(cfg.participant?.contextNote?'<p class="note">'+esc(cfg.participant.contextNote)+'</p>':''),[{id:'start',label:isReady?'Iniciar tarefa':'Voltar à tarefa',primary:true}]);d.querySelector('[data-control=start]').onclick=()=>{close();if(isReady){S.phase='running';S.startedAt=Date.now();S.visibleMs=0;record({type:'task_started',screenId:adapter.getScreen(),payload:{assistedSetup:S.assistedSetup===true}});record({type:'screen_view',screenId:adapter.getScreen(),payload:{}});}else {S.phase='running';record({type:'resume'});}lastTick=performance.now();save();update();};}
- function prepare(){close();S.phase='ready';S.attemptId=crypto.randomUUID();S.assistedSetup=adapter.prepare(currentTask(),S.session).assistedSetup;S.visibleMs=0;S.timingScreen=adapter.getScreen();save();update();instructions(true);}
+ function prepare(){close();S.phase='ready';S.attemptId=crypto.randomUUID();S.attemptEventCount=0;S.lastAttemptEventSequence=0;S.nextTaskPending=false;S.assistedSetup=adapter.prepare(currentTask(),S.session).assistedSetup;S.visibleMs=0;S.timingScreen=adapter.getScreen();save();update();instructions(true);}
  function resetParticipation(){close();try{localStorage.removeItem(storageKey);localStorage.removeItem(storageKey+':creation');}catch{}S=null;saved=null;visualWarning='';adapter.prepare(cfg.tasks[0]);update();consent();}
  function showFinished(){modal(S.phase==='finished'?'Participação recebida':'Participação encerrada','<p>Os registros enviados foram confirmados. Obrigado por participar deste estudo.</p><p>Código da participação: <strong>'+esc(S.session.alias)+'</strong></p>'+(S.captureIncomplete?'<p>Parte da captura visual ficou indisponível. As respostas foram recebidas.</p>':''),[{id:'new',label:'Iniciar outra participação',primary:true}]).querySelector('[data-control=new]').onclick=resetParticipation;}
  function consent(){const categories=['caminhos, tempos e respostas',...(cfg.visual.enabled?['reconstruções sanitizadas das telas do protótipo']:[]),...(cfg.visual.heatmaps?['pontos de clique']:[])].join('; ');const d=modal(cfg.participant?.welcomeTitle||'Vamos testar este protótipo?','<p>Você fará '+cfg.tasks.length+' tarefas. '+(cfg.environment==='pilot'?'Este é um piloto com dados fictícios. ':'')+'Serão coletados: '+esc(categories)+'.</p><p>Campos digitados e conteúdo marcado ficam ocultados na captura visual. Respostas às perguntas são armazenadas separadamente e podem conter o que você decidir escrever; evite dados pessoais.</p><p>Responsável: '+esc(cfg.consent.controller)+'. '+(cfg.consent.contact?'Contato: '+esc(cfg.consent.contact)+'. ':'')+'Resultados disponíveis à equipe autorizada. Retenção: '+cfg.consent.retentionDays+' dias. Não há vídeo, áudio, câmera, localização ou captura de outros aplicativos.</p><p>Você pode recusar, pausar ou encerrar quando quiser. Encerrar interrompe novas interações; registros enviados permanecem até a exclusão ou o prazo de retenção. A retomada depende do mesmo navegador. Campos digitados no produto não são restaurados pelo exemplo.</p>',[{id:'accept',label:'Aceitar e começar',primary:true},{id:'decline',label:'Não participar'}]);
@@ -60,14 +107,14 @@ export async function runStudy({config,adapter,root}){
   const d=modal('Como foi esta tarefa?','<p>Você indicou '+(resultStatus==='gave_up'?'que não conseguiu concluir.':'que terminou. A evidência do protótipo será verificada separadamente.')+'</p><form id="response-form">'+form+'</form>',[{id:'send',label:'Enviar resposta',primary:true},{id:'back',label:'Voltar à tarefa'}]);
   d.querySelector('[data-control=back]').onclick=()=>{close();S.phase='running';lastTick=performance.now();save();update();};
   d.querySelector('[data-control=send]').onclick=()=>{const values=new FormData(d.querySelector('form')),answers={};for(const q of task.postTaskQuestions||[]){const v=values.get(q.questionId);if(q.required&&(v===null||v==='')){error('Responda as perguntas obrigatórias.');return;}if(v!==null&&v!=='')answers[q.questionId]=q.type==='scale'?Number(v):String(v);}
-   S.pendingResult={id:'result:'+S.attemptId,taskId:task.taskId,attemptId:S.attemptId,sequence:++S.sequence,status:resultStatus,visibleExecutionMs:Math.min(Math.round(S.visibleMs),Math.round(elapsedMs)),elapsedMs:Math.round(elapsedMs),answers};S.phase='sync';save();close();syncModal();flush();};
+   S.pendingResult={id:'result:'+S.attemptId,taskId:task.taskId,attemptId:S.attemptId,sequence:++S.sequence,status:resultStatus,visibleExecutionMs:Math.min(Math.round(S.visibleMs),Math.round(elapsedMs)),elapsedMs:Math.round(elapsedMs),answers,eventBarrier:{count:S.attemptEventCount,lastSequence:S.lastAttemptEventSequence}};S.phase='sync';save();close();syncModal();flush();};
  }
  function syncModal(){const d=modal('Recebendo sua resposta','<p>A próxima tarefa abre após o servidor confirmar o recebimento. Se a conexão cair, você pode tentar novamente ou reabrir esta página no mesmo navegador.</p>',[{id:'retry',label:'Tentar enviar novamente',primary:true}]);d.querySelector('button').onclick=()=>{retryCount=0;flush();};}
  toolbar.onclick=e=>{const action=e.target.closest('[data-tool]')?.dataset.tool;if(!action||!S)return;if(action==='instructions'&&S.phase==='running'){record({type:'pause'});instructions(false);}if(action==='complete'&&S.phase==='running'&&!modalOpen)answers('self_reported');if(action==='giveup'&&S.phase==='running'&&!modalOpen)answers('gave_up');if(action==='pause'){if(S.phase==='paused'&&S.events.length>=500){retryCount=0;flush();return;}tick();const paused=S.phase==='paused';if(!paused)record({type:'pause'});S.phase=paused?'running':'paused';if(paused)record({type:'resume'});lastTick=performance.now();save();update();}if(action==='stop'){const was=S.phase;const d=modal('Encerrar a participação?','<p>Os registros já enviados permanecem disponíveis. Tarefas não finalizadas não serão marcadas como concluídas.</p>',[{id:'stop',label:'Encerrar e enviar',primary:true},{id:'back',label:'Continuar'}]);d.querySelector('[data-control=back]').onclick=()=>{close();S.phase=was;update();};d.querySelector('[data-control=stop]').onclick=()=>{close();S.phase='sync';S.stopPending=true;save();syncModal();flush();};}};
- dialog.addEventListener('cancel',e=>e.preventDefault());document.addEventListener('visibilitychange',()=>{const delta=timing.setVisible(!document.hidden,executing());if(S)S.visibleMs+=delta;if(document.hidden){capture.pause();S&&S.phase==='running'&&S.events.push({id:crypto.randomUUID(),taskId:currentTask().taskId,attemptId:S.attemptId,sequence:++S.sequence,type:'visibility_changed',screenId:adapter.getScreen(),payload:{visible:false},timelineMs:Math.max(0,Date.now()-S.timelineOrigin)});}else if(S?.phase==='running')record({type:'visibility_changed',payload:{visible:true}});save();update();});window.addEventListener('pagehide',()=>{tick();save();});window.addEventListener('online',()=>{retryCount=0;flush();});clockId=setInterval(()=>{tick();save();},1000);
+ dialog.addEventListener('cancel',e=>e.preventDefault());document.addEventListener('visibilitychange',()=>{const delta=timing.setVisible(!document.hidden,executing());if(S)S.visibleMs+=delta;if(document.hidden){capture.pause();if(S?.phase==='running')appendEvent({type:'visibility_changed',payload:{visible:false}});}else if(S?.phase==='running')record({type:'visibility_changed',payload:{visible:true}});save();update();});window.addEventListener('pagehide',()=>{tick();save();});window.addEventListener('online',()=>{retryCount=0;flush();});clockId=setInterval(()=>{tick();save();},1000);
  adapter.subscribe(record);
  update();
- if(saved){try{S=await recoverSession(saved,id=>api('/sessions/'+id));if(S.snapshot)adapter.restore(S.snapshot);save();if(['finished','stopped'].includes(S.phase))showFinished();else if(S.pendingResult||S.finishPending||S.stopPending){S.phase='sync';syncModal();flush();}else if(S.phase==='ready')instructions(true);else{const d=modal('Retomar a tarefa','<p>O teste ficou pausado. O tempo fora da página não conta como execução visível.</p>',[{id:'resume',label:'Continuar tarefa',primary:true}]);d.querySelector('button').onclick=()=>{close();S.phase='running';S.segmentId=crypto.randomUUID();record({type:'resume'});lastTick=performance.now();save();update();flush();};}}catch(e){if([401,404].includes(e.status)){modal('Participação indisponível','<p>O registro expirou ou não pode mais ser retomado. Você pode limpar esta participação do aparelho e começar outra.</p>',[{id:'new',label:'Limpar e iniciar outra',primary:true}]).querySelector('button').onclick=resetParticipation;}else modal('Não foi possível retomar','<p>'+esc(e.message)+'</p>',[{id:'retry',label:'Recarregar',primary:true}]).querySelector('button').onclick=()=>location.reload();}}
+ if(saved){try{S=await recoverSession(saved,id=>api('/sessions/'+id));if(S.snapshot)adapter.restore(S.snapshot);save();if(['finished','stopped'].includes(S.phase))showFinished();else if(S.pendingResult||S.finishPending||S.stopPending){S.phase='sync';syncModal();flush();}else if(S.nextTaskPending)prepare();else if(S.phase==='ready')instructions(true);else{const d=modal('Retomar a tarefa','<p>O teste ficou pausado. O tempo fora da página não conta como execução visível.</p>',[{id:'resume',label:'Continuar tarefa',primary:true}]);d.querySelector('button').onclick=()=>{close();S.phase='running';S.segmentId=crypto.randomUUID();record({type:'resume'});lastTick=performance.now();save();update();flush();};}}catch(e){if([401,404].includes(e.status)){modal('Participação indisponível','<p>O registro expirou ou não pode mais ser retomado. Você pode limpar esta participação do aparelho e começar outra.</p>',[{id:'new',label:'Limpar e iniciar outra',primary:true}]).querySelector('button').onclick=resetParticipation;}else modal('Não foi possível retomar','<p>'+esc(e.message)+'</p>',[{id:'retry',label:'Recarregar',primary:true}]).querySelector('button').onclick=()=>location.reload();}}
  else consent();
  return {record};
 }

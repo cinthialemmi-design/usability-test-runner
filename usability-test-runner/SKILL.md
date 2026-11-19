@@ -13,7 +13,7 @@ Quando invocada para construir um estudo, implemente e conecte essas partes; nã
 
 Use [assets/starter](assets/starter/README.md) como implementação de referência: participante, receptor, SQLite, painel privado, mapas e replay. Copie para um projeto próprio; não execute pesquisas dentro da pasta instalada da skill. Leia [starter.md](references/starter.md) para adaptar o código, conhecer as capacidades implementadas e escolher a integração com a infraestrutura disponível.
 
-A referência separa `study.config.json` e `public/prototype/` dos componentes do motor. Ela usa Node.js 24+ e SQLite, com uma variante fixa e uma instalação por estudo/revisão/ambiente. O contrato portátil é mais amplo que este primeiro perfil: randomização, conclusão automática e assets visuais adicionais precisam de extensão explícita. Não prometa uma capacidade apenas porque há um campo de configuração.
+A referência separa `study.config.json` e `public/prototype/` dos componentes do motor. Ela usa Node.js 24+ e SQLite, com uma variante fixa e uma instalação por estudo/revisão/ambiente. O contrato portátil é mais amplo que este primeiro perfil: randomização, conclusão automática e recursos fora do subconjunto suportado precisam de extensão explícita. Imagens/fontes locais aprovadas já são incorporadas ao replay; leia [approved-assets.md](references/approved-assets.md) ao adaptar a marca. Não prometa uma capacidade apenas porque há um campo de configuração.
 
 A referência inclui uma lista explícita de verificações de execução ainda pendentes nesta versão; a presença de código não equivale a coleta conectada verificada. Em cada tarefa, siga o escopo e as autorizações atuais do usuário.
 

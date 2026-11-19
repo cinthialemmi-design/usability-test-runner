@@ -24,6 +24,15 @@ export async function handleAPI(request,env){
   async function sessionAuth(sessionId){const s=await q('SELECT * FROM sessions WHERE id = ? AND token_hash = ?',id(sessionId),await digest(authToken(request))).first();if(!s)fail(401,'Sessão não autorizada.');return s;}
   const shape=s=>({id:s.id,alias:s.alias,status:s.status,createdAt:s.created_at,variantId:s.variant,prototypeRevision:s.revision,studyId:cfg.studyId,studyRevision:cfg.studyRevision,environment:cfg.environment,consentVersion:s.consent_version,visualCaptureVersion:s.consent,captureIncomplete:!!s.capture_incomplete});
   async function ensureAttempt(s,taskId,attemptId){taskFor(taskId);const started=await q("SELECT id FROM records WHERE session_id=? AND task_id=? AND attempt_id=? AND kind='event' AND json_extract(data,'$.type')='task_started'",s.id,taskId,attemptId).first();if(!started)fail(400,'Tentativa não iniciada.');}
+  function eventBarrier(raw){
+   if(!raw||!Number.isInteger(raw.count)||!Number.isInteger(raw.lastSequence))fail(400,'Confirmação de evidências obrigatória.');
+   number(raw.count,0,1000000);number(raw.lastSequence,0,1000000);
+   return {count:raw.count,lastSequence:raw.lastSequence};
+  }
+  function verifyBarrier(events,barrier){
+   const last=events.reduce((max,event)=>Math.max(max,event.sequence),0);
+   if(events.length!==barrier.count||last!==barrier.lastSequence)fail(409,'Há eventos pendentes antes de finalizar. Reenvie as evidências.');
+  }
   function context(item,s){
    const task=taskFor(item.taskId),screen=cfg.prototype.screens.find(x=>x.screenId===item.screenId);
    if(!screen)fail(400,'Tela desconhecida.');
@@ -92,10 +101,10 @@ export async function handleAPI(request,env){
     const batch=[],frames=new Map(),budget={frames:0,points:0,bytes:0};
     for(const raw of body.frames){
      const ctx=context(raw,s);await ensureAttempt(s,ctx.taskId,ctx.attemptId);id(raw.frameId);
-     for(const [key,value]of Object.entries({prototypeRevision:s.revision,variantId:s.variant,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId}))if(raw[key]!==value)fail(400,'Revisão visual incompatível.');
+     for(const [key,value]of Object.entries({prototypeRevision:s.revision,variantId:s.variant,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,captureSchemaVersion:cfg.visual.captureSchemaVersion}))if(raw[key]!==value)fail(400,'Revisão visual incompatível.');
      const width=number(raw.width,160,2048),height=number(raw.height,160,4096);if(!Number.isInteger(width)||!Number.isInteger(height))fail(400,'Geometria inválida.');
-     const tree=sanitizeTree(raw.tree,cfg.visual.privacy);if(!tree)fail(400,'Árvore inválida.');
-     const data={...ctx,frameId:raw.frameId,width,height,tree,prototypeRevision:s.revision,variantId:s.variant,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,timelineMs:number(raw.timelineMs),segmentId:id(raw.segmentId)};
+     const tree=sanitizeTree(raw.tree,cfg.visual.privacy,cfg.brand.assets);if(!tree)fail(400,'Árvore inválida.');
+     const data={...ctx,frameId:raw.frameId,width,height,tree,prototypeRevision:s.revision,variantId:s.variant,brandBundleId:cfg.brand.bundleId,rendererBundleId:cfg.visual.rendererBundleId,captureSchemaVersion:cfg.visual.captureSchemaVersion,timelineMs:number(raw.timelineMs),segmentId:id(raw.segmentId)};
      data.layoutKey=await groupKey(data);const bytes=new TextEncoder().encode(canonical(tree)).length;if(bytes>80000)fail(413,'Captura grande demais.');
      if(!await existingRecord(s,raw.frameId,data)){budget.frames++;budget.bytes+=bytes;}
      batch.push({id:raw.frameId,kind:'frame',data});frames.set(raw.frameId,data);
@@ -112,22 +121,26 @@ export async function handleAPI(request,env){
     await insertRecords(s,batch,budget);return json({receivedFrameIds:body.frames.map(x=>x.frameId),receivedPointIds:body.points.map(x=>x.pointId)});
    }
    if(action==='results'){
-    const task=taskFor(body.taskId);id(body.id);id(body.attemptId);number(body.sequence,1,1000000);await ensureAttempt(s,body.taskId,body.attemptId);
+    const task=taskFor(body.taskId);id(body.id);id(body.attemptId);number(body.sequence,1,1000000);if(!Number.isInteger(body.sequence))fail(400,'Sequência inválida.');await ensureAttempt(s,body.taskId,body.attemptId);
     if(!['self_reported','gave_up'].includes(body.status))fail(400,'Resultado inválido.');
     if(body.status==='gave_up'&&task.allowGiveUp===false)fail(400,'Desistência não habilitada nesta tarefa.');
     if(body.status==='self_reported'&&task.allowSelfReportedCompletion===false)fail(400,'Declaração não habilitada nesta tarefa.');
     const elapsedMs=number(body.elapsedMs),visibleExecutionMs=number(body.visibleExecutionMs,0,elapsedMs),answers={};
     for(const question of task.postTaskQuestions||[]){const value=body.answers?.[question.questionId];if(value===undefined||value===null||value===''){if(question.required)fail(400,'Responda as perguntas obrigatórias.');continue;}if(question.type==='scale'){number(value,question.min,question.max);if(!Number.isInteger(value))fail(400,'Escala inválida.');answers[question.questionId]=value;}else {if(typeof value!=='string'||value.length>1000)fail(400,'Texto inválido.');answers[question.questionId]=value;}}
-    const input={id:body.id,taskId:body.taskId,attemptId:body.attemptId,sequence:body.sequence,status:body.status,elapsedMs,visibleExecutionMs,answers};
+    const input={id:body.id,taskId:body.taskId,attemptId:body.attemptId,sequence:body.sequence,status:body.status,elapsedMs,visibleExecutionMs,answers,eventBarrier:eventBarrier(body.eventBarrier)};
     const old=await q("SELECT data FROM records WHERE session_id=? AND id=? AND kind='result'",s.id,body.id).first();if(old){const data=JSON.parse(old.data);if(canonical(data.input)!==canonical(input))fail(409,'Resposta já recebida com conteúdo diferente.');return json(data);}
     const events=parsed(await all(s.id,'event')).filter(e=>e.taskId===task.taskId&&e.attemptId===body.attemptId).sort((a,b)=>a.sequence-b.sequence),start=events.find(e=>e.type==='task_started');
-    const evidence=events.filter(e=>e.sequence>=start.sequence&&e.sequence<body.sequence),state=Object.assign({},...evidence.filter(e=>e.type==='state_change').map(e=>e.payload));
+    verifyBarrier(events,input.eventBarrier);
+    if(events.some(e=>e.sequence<start.sequence||e.sequence>=body.sequence))fail(409,'Ordem de evidências inválida.');
+    const evidence=events;
+    const state=Object.assign({},...evidence.filter(e=>e.type==='state_change').map(e=>e.payload));
     const outcome=body.status==='gave_up'?'gave_up':evaluate(task.successCriterion,evidence,state,answers)?'observed_success':'self_reported';
     const data={...input,input,outcome,criterionVersion:cfg.studyRevision,evidenceIds:evidence.map(e=>e.id),captureIncomplete:body.captureIncomplete===true};
     await insertRecords(s,[{id:body.id,kind:'result',data}]);return json(data);
    }
    if(action==='finish'||action==='stop'){
     const results=parsed(await all(s.id,'result'));
+    verifyBarrier(parsed(await all(s.id,'event')),eventBarrier(body.eventBarrier));
     if(action==='finish'&&!cfg.tasks.every(t=>results.some(r=>r.taskId===t.taskId)))fail(409,'Há tarefas sem resposta.');
     const status=action==='finish'?'completed':'stopped';if(s.status==='active')await q('UPDATE sessions SET status=?,capture_incomplete=MAX(capture_incomplete,?) WHERE id=?',status,body.captureIncomplete===true?1:0,s.id).run();return json({status:s.status==='active'?status:s.status});
    }

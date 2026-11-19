@@ -2,8 +2,8 @@
   "schemaVersion": "2",
   "exampleOnly": false,
   "studyId": "rooms-demo",
-  "studyRevision": "1",
-  "prototypeRevision": "rooms-r1",
+  "studyRevision": "2",
+  "prototypeRevision": "rooms-r2",
   "title": "Reserva de salas",
   "locale": "pt-BR",
   "researchObjective": "Observar a reserva de um espaço e a compreensão da confirmação.",
@@ -20,6 +20,23 @@
     "stylesheets": [
       "/runner.css",
       "/prototype/style.css"
+    ],
+    "assets": [
+      {
+        "assetId": "rooms-mark",
+        "kind": "image",
+        "path": "/prototype/assets/rooms-mark.svg"
+      },
+      {
+        "assetId": "atkinson-regular",
+        "kind": "font",
+        "path": "/prototype/assets/AtkinsonHyperlegible-Regular.ttf"
+      },
+      {
+        "assetId": "atkinson-bold",
+        "kind": "font",
+        "path": "/prototype/assets/AtkinsonHyperlegible-Bold.ttf"
+      }
     ]
   },
   "prototype": {
@@ -275,7 +292,7 @@
     "enabled": true,
     "heatmaps": true,
     "replay": true,
-    "captureSchemaVersion": "1",
+    "captureSchemaVersion": "2",
     "rendererBundleId": "rooms-renderer-r1",
     "rendererBundle": "replay/rooms-r1.html",
     "privacy": {
@@ -329,7 +346,8 @@
         "4 pessoas · Tela",
         "10 pessoas · Vídeo e tela",
         "Salas",
-        "Amanhã (exemplo)"
+        "Amanhã (exemplo)",
+        "Marca do exemplo de salas"
       ],
       "maskSelectors": [
         "[data-user-content]"
@@ -365,11 +383,22 @@
         "secondary",
         "space",
         "status-icon",
-        "summary"
+        "summary",
+        "brand-mark"
       ],
       "allowedIds": [
         "product"
-      ]
+      ],
+      "allowedAttributes": {
+        "data-screen": [
+          "rooms",
+          "details",
+          "booking",
+          "confirmed",
+          "reservations",
+          "cancelled"
+        ]
+      }
     },
     "limits": {
       "maxFrames": 600,
@@ -389,5 +418,5 @@
     "welcomeTitle": "Vamos testar a reserva de salas?",
     "contextNote": "Cenário fictício: amanhã, das 14h às 15h."
   },
-  "runtimeProfile": "starter-1"
+  "runtimeProfile": "starter-2"
 }

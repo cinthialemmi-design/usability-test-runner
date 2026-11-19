@@ -51,7 +51,7 @@ function allow(key,max) {
   return ++item.count<=max;
 }
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8',...headers}});
-const csp="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
+const csp="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
 const server=http.createServer(async(req,res)=>{
   let response;
   try {
@@ -73,7 +73,7 @@ const server=http.createServer(async(req,res)=>{
     else response=await handleAPI(request,{DB,CONFIG,isResearcher:auth.authenticated});
     if(!response) {
       const file=files[target.pathname];
-      response=file&&['GET','HEAD'].includes(req.method)?new Response(req.method==='HEAD'?null:file.body,{headers:{'Content-Type':file.mime}}):json({error:'Página não encontrada.'},404);
+      response=file&&['GET','HEAD'].includes(req.method)?new Response(req.method==='HEAD'?null:file.encoding==='base64'?Buffer.from(file.body,'base64'):file.body,{headers:{'Content-Type':file.mime}}):json({error:'Página não encontrada.'},404);
     }
     const headers=Object.fromEntries(response.headers);
     headers['Cache-Control']='no-store'; headers['X-Content-Type-Options']='nosniff'; headers['Referrer-Policy']='no-referrer';

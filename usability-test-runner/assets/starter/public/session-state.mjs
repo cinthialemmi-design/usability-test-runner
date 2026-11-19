@@ -1,6 +1,6 @@
 export function ackResult(state,result,total){
  const results=state.results.some(r=>r.id===result.id)?state.results:[...state.results,result];
- const next={...state,results,pendingResult:null,taskIndex:state.taskIndex+1};
+ const next={...state,results,pendingResult:null,taskIndex:state.taskIndex+1,nextTaskPending:true,phase:'preparing'};
  if(next.taskIndex>=total){next.finishPending=true;next.phase='sync';}
  return next;
 }
