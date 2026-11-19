@@ -18,6 +18,8 @@ Não chame armazenamento local, receptor simulado ou interface com dados fictíc
 
 Registre quais telas e recursos foram efetivamente lidos e quais comportamentos foram implementados como hipótese. Obter contexto ou screenshot do design não comprova fidelidade da implementação. Quando a execução estiver autorizada, compare o HTML renderizado com a fonte no escopo/dispositivo pedido e percorra as tarefas instrumentadas. Sem autorização para testes, mantenha fidelidade visual e funcionamento do estudo como pendências, mesmo que os arquivos estejam implementados.
 
+Nessa comparação, confira os SVGs originais e quaisquer alternativas permitidas e autorizadas; as faces/pesos/estilos efetivamente renderizados, inclusive fontes variáveis e fallback; e a acessibilidade do HTML gerado, com teclado, foco, nomes, estados, contraste, zoom e movimento reduzido. Use [approved-assets.md](approved-assets.md) e [html-integration.md](html-integration.md#mobile-e-acessibilidade). Registre separadamente limitações da fonte e defeitos da conversão; não marque fidelidade ou acessibilidade como verificadas apenas por inspeção dos arquivos.
+
 A publicação do código da skill no GitHub não implica publicação de um estudo nem autorização para modificar o arquivo Figma de origem. Fonte inacessível, HTML pendente e infraestrutura pendente são dependências distintas; indique cada uma concretamente.
 
 ## Percurso mínimo de prontidão

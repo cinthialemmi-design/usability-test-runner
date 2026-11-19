@@ -52,6 +52,8 @@ A conversão é realizada pelo Codex durante a implementação. O servidor do st
 
 Comportamentos ausentes no design são tratados como hipóteses identificadas. Origem das telas, nós usados, interações e pendências ficam em um registro de projeto fora da configuração pública. Se faltar acesso, a entrega indica a conexão/permissão ou link específico necessário e avança nas partes independentes.
 
+O guia também cobre preservação de SVGs incompatíveis, mapeamento de faces/pesos estáticos e variáveis e acessibilidade do HTML gerado. Alternativas visuais dependem das permissões da fonte e da autorização do projeto; limitações do design ficam separadas de defeitos introduzidos na conversão. Essas instruções não equivalem a fidelidade ou acessibilidade verificadas em execução.
+
 Leia o [fluxo Figma → HTML](usability-test-runner/references/figma-to-html.md). A base continua no perfil `starter-3`: esta atualização amplia a entrada e as instruções da skill, preservando o contrato do runtime. Como solicitado, essa ampliação não foi exercitada com um arquivo Figma, build ou teste de execução.
 
 ## Infraestrutura e entrega

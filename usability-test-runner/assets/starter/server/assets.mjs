@@ -41,7 +41,7 @@ function assertBytes(extension,bytes){
   // Static SVG files are images, never inserted as live SVG markup. Reject a
   // conservative subset of active/reference features before freezing the bytes.
   const svg=bytes.toString('utf8').replace(/^\uFEFF/,'').replace(/^\s*<\?xml[^?]*\?>/i,'').trim();
-  if(!/^<svg\b/i.test(svg)||!/<\/svg>\s*$/i.test(svg)||/[&]|<!|<\?|<\s*(?:script|foreignObject|iframe|object|embed|style|a|image|use|animate\w*|set)\b|\s(?:on[\w:-]+|(?:xlink:)?href|src|style)\s*=|url\s*\(/i.test(svg))throw Error('SVG não pertence ao subconjunto estático aprovado. Use paths/formas sem referências ou converta para PNG/WebP.');
+  if(!/^<svg\b/i.test(svg)||!/<\/svg>\s*$/i.test(svg)||/[&]|<!|<\?|<\s*(?:script|foreignObject|iframe|object|embed|style|a|image|use|animate\w*|set)\b|\s(?:on[\w:-]+|(?:xlink:)?href|src|style)\s*=|url\s*\(/i.test(svg))throw Error('SVG não pertence ao subconjunto estático aprovado. Preserve o original e registre a incompatibilidade; consulte approved-assets.md antes de adaptar a integração ou usar uma alternativa autorizada.');
  }else if(!matches[extension])throw Error('Conteúdo do asset incompatível com sua extensão.');
 }
 

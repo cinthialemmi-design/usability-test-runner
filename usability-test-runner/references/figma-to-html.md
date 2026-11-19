@@ -33,7 +33,8 @@ Guarde no projeto um registro curto, por exemplo `design-source.local.json`, **f
 | Origem | Link recebido, arquivo/branch e nós efetivamente consultados; data ou versão quando disponível |
 | Telas | `screenId` estável, nó Figma correspondente, componente/arquivo HTML de destino e estados necessários |
 | Interações | Ação, origem/destino, mudança de estado e indicação de fonte Figma ou hipótese de implementação |
-| Recursos | Asset/nó de origem, arquivo local, `assetId` e fonte de tipografia |
+| Recursos | Asset/nó de origem, arquivo local, `assetId`, faces/pesos/eixos tipográficos e adaptações autorizadas |
+| Acessibilidade | Limitações da fonte, lacunas de comportamento e decisões da implementação, separadas de defeitos introduzidos na conversão |
 | Pendências | Acesso, comportamento não definido, asset/fonte ausente e verificação não executada |
 
 Esse registro é rastreabilidade de projeto, não configuração do participante. Não acrescente links privados, chaves de acesso ou respostas esperadas ao JSON público do estudo. A base ignora `design-source.local.json` no Git por padrão; a equipe decide seu armazenamento conforme a audiência do projeto.
@@ -46,7 +47,9 @@ Copie a base para o projeto ou integre ao código já existente, conforme [start
 - Implemente navegação, voltar, entradas, validações e consequências das ações necessárias às tarefas. Use dados/fixtures fictícios e operações simuladas do produto, com estado consistente entre telas. Uma tarefa de compreensão pode exigir avaliação humana; apenas exibir sua tela não comprova compreensão.
 - Traduza Auto Layout/constraints para layout apropriado no projeto; não imponha posicionamento absoluto a todo o fluxo quando o design for responsivo.
 - Preserve os recursos estáticos fornecidos pela fonte, nos locais e proporções correspondentes. Faça downloads pelo procedimento indicado pela integração e substitua URLs temporárias por arquivos locais aprovados, conforme [approved-assets.md](approved-assets.md). Não reilustre logos ou troque imagens por similares para esconder uma incompatibilidade.
-- Se um asset original exigir capacidade ausente no renderer, adapte a integração com segurança ou declare a pendência específica, continuando as partes independentes. Não altere silenciosamente o formato/visual nem diga que o replay está fiel. Fontes indisponíveis também precisam de pendência ou substituição explicitamente identificada.
+- Para SVGs incompatíveis, siga a regra de preservação de [approved-assets.md](approved-assets.md): não simplifique, rasterize ou desative proteções para fazê-los passar. Adapte a integração com segurança no escopo autorizado ou registre a pendência. Uma alternativa depende de permissão da fonte e autorização do projeto; uma proibição da integração de origem continua válida.
+- Mapeie fontes estáticas/variáveis, pesos e estilos reais em `@font-face`, conforme [approved-assets.md](approved-assets.md). Incorpore os arquivos aprovados e evite negrito/itálico artificiais; não confunda empacotamento com aplicação tipográfica correta. Faces ausentes e substituições identificadas permanecem no registro de pendências.
+- Aplique ao produto gerado os requisitos de [Mobile e acessibilidade](html-integration.md#mobile-e-acessibilidade), incluindo nomes, teclado, foco e estados. Distinga limitações do design de defeitos criados na conversão; não redesenhe uma condição de pesquisa silenciosamente.
 - Mantenha CSS, tokens e controles do produto isolados dos controles da pesquisa, conforme [viewport-and-css.md](viewport-and-css.md). O celular real usa o conteúdo do aplicativo; moldura de aparelho e justificativas de design não entram na tarefa.
 - Não edite nem publique alterações no arquivo Figma de origem como efeito colateral da conversão.
 

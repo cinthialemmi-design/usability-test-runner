@@ -4,6 +4,9 @@ Esta atualização foi feita com proibição explícita de retomar testes. Nenhu
 
 - [ ] Entrada Figma, quando usada: acesso real, frames corretos, recursos locais e interações implementadas estão documentados; origem e hipóteses não aparecem no JSON público.
 - [ ] Fidelidade Figma, quando usada: comparar HTML renderizado no dispositivo alvo e percorrer as tarefas, sem confundir screenshot do design com verificação do produto.
+- [ ] SVGs: conferir preservação dos originais e recusa dos incompatíveis sem contorno; eventuais alternativas têm permissão da fonte, autorização e diferenças registradas, com comparação visual ainda necessária.
+- [ ] Tipografia: conferir faces estáticas, intervalos/eixos variáveis, pesos e estilos reais, ausência de negrito/itálico sintetizados e fallback inesperado, quebras de linha e equivalência entre participante e replay.
+- [ ] HTML gerado: conferir nomes/rótulos, semântica, teclado, foco em navegação/diálogos, estados/erros, contraste, zoom, alvos de toque e movimento reduzido; distinguir problemas da fonte de defeitos da conversão.
 - [ ] Janela: produto de largura fixa em janela grande mantém os mesmos breakpoints e unidades `vw/vh` no replay.
 - [ ] Recorte: rolagem da página, produto parcialmente visível, teclado e orientação preservam origem/área visível sem deslocar pontos.
 - [ ] Agrupamento: mesma raiz/árvore com janelas ou recortes diferentes gera grupos visuais distintos; recorte informado pelo cliente é recalculado pelo servidor.
