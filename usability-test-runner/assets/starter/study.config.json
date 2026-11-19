@@ -1,0 +1,393 @@
+{
+  "schemaVersion": "2",
+  "exampleOnly": false,
+  "studyId": "rooms-demo",
+  "studyRevision": "1",
+  "prototypeRevision": "rooms-r1",
+  "title": "Reserva de salas",
+  "locale": "pt-BR",
+  "researchObjective": "Observar a reserva de um espaço e a compreensão da confirmação.",
+  "decisionToSupport": "Revisar a navegação e a confirmação da reserva.",
+  "audience": "Demonstração com dados fictícios",
+  "device": "mobile",
+  "collectionMode": "connected",
+  "environment": "pilot",
+  "collectorEndpoint": "/api",
+  "brand": {
+    "source": "assets",
+    "bundleId": "rooms-brand-r1",
+    "label": "Salas",
+    "stylesheets": [
+      "/runner.css",
+      "/prototype/style.css"
+    ]
+  },
+  "prototype": {
+    "rootSelector": "#product",
+    "adapter": "prototype/adapter.mjs",
+    "screens": [
+      {
+        "screenId": "rooms",
+        "label": "Salas"
+      },
+      {
+        "screenId": "details",
+        "label": "Detalhes"
+      },
+      {
+        "screenId": "booking",
+        "label": "Reserva"
+      },
+      {
+        "screenId": "confirmed",
+        "label": "Confirmada"
+      },
+      {
+        "screenId": "reservations",
+        "label": "Minhas reservas"
+      },
+      {
+        "screenId": "cancelled",
+        "label": "Cancelada"
+      }
+    ],
+    "allowedStateKeys": [
+      "suitableSelected",
+      "reservationCreated",
+      "reservationCancelled"
+    ],
+    "allowedActionIds": [
+      "room-selected",
+      "reservation-created",
+      "reservation-cancelled"
+    ],
+    "allowedEventFields": [
+      "ok",
+      "assistedSetup"
+    ]
+  },
+  "consent": {
+    "version": "study-v1",
+    "visualCaptureVersion": "visual-v1",
+    "controller": "Equipe responsável pela demonstração — substituir antes de uma pesquisa real",
+    "retentionDays": 7,
+    "dataCategories": [
+      "eventos semânticos",
+      "tempos",
+      "respostas voluntárias",
+      "árvores visuais sanitizadas",
+      "pontos de clique"
+    ],
+    "audioEnabled": false,
+    "videoEnabled": false
+  },
+  "assignment": {
+    "method": "fixed",
+    "variantId": "original",
+    "persistOnResume": true
+  },
+  "variants": [
+    {
+      "variantId": "original",
+      "entry": "index.html",
+      "label": "Layout de exemplo"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenarioId": "empty",
+      "fixtureKey": "empty"
+    },
+    {
+      "scenarioId": "booked",
+      "fixtureKey": "booked"
+    }
+  ],
+  "resumePolicy": {
+    "enabled": true,
+    "scope": "same-browser",
+    "preserveAttempt": true
+  },
+  "tasks": [
+    {
+      "taskId": "choose-space",
+      "title": "Encontrar um espaço",
+      "scenario": "Sua equipe de seis pessoas vai se reunir amanhã, às 14h, com alguém participando por vídeo. Encontre uma sala adequada.",
+      "entry": {
+        "screenId": "rooms",
+        "scenarioId": "empty",
+        "continuity": "reset"
+      },
+      "completionMode": "participant",
+      "successCriterion": {
+        "all": [
+          {
+            "event": {
+              "type": "action",
+              "actionId": "room-selected",
+              "where": {
+                "ok": true
+              }
+            }
+          },
+          {
+            "state": {
+              "suitableSelected": true
+            }
+          }
+        ]
+      },
+      "manualReview": false,
+      "allowSelfReportedCompletion": true,
+      "allowGiveUp": true,
+      "timing": {
+        "excludeScreens": []
+      },
+      "postTaskQuestions": [
+        {
+          "questionId": "ease",
+          "type": "scale",
+          "prompt": "Como foi realizar esta tarefa?",
+          "min": 1,
+          "max": 7,
+          "minLabel": "Muito difícil",
+          "maxLabel": "Muito fácil",
+          "required": false
+        },
+        {
+          "questionId": "comment",
+          "type": "text",
+          "prompt": "Algo dificultou ou ajudou? Não informe dados pessoais.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "taskId": "reserve-space",
+      "title": "Organizar a reunião",
+      "scenario": "Reserve o espaço para amanhã, das 14h às 15h. Se quiser, dê um título fictício à reunião.",
+      "entry": {
+        "screenId": "details",
+        "scenarioId": "empty",
+        "continuity": "preserve",
+        "carryFromTaskId": "choose-space"
+      },
+      "completionMode": "participant",
+      "successCriterion": {
+        "all": [
+          {
+            "event": {
+              "type": "action",
+              "actionId": "reservation-created",
+              "where": {
+                "ok": true
+              }
+            }
+          },
+          {
+            "state": {
+              "reservationCreated": true
+            }
+          }
+        ]
+      },
+      "manualReview": false,
+      "allowSelfReportedCompletion": true,
+      "allowGiveUp": true,
+      "timing": {
+        "excludeScreens": []
+      },
+      "postTaskQuestions": [
+        {
+          "questionId": "ease",
+          "type": "scale",
+          "prompt": "Como foi realizar esta tarefa?",
+          "min": 1,
+          "max": 7,
+          "minLabel": "Muito difícil",
+          "maxLabel": "Muito fácil",
+          "required": false
+        },
+        {
+          "questionId": "comment",
+          "type": "text",
+          "prompt": "Algo dificultou ou ajudou? Não informe dados pessoais.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "taskId": "cancel-reservation",
+      "title": "Mudar os planos",
+      "scenario": "A reunião não será mais necessária. Desfaça a reserva para liberar o espaço.",
+      "entry": {
+        "screenId": "confirmed",
+        "scenarioId": "empty",
+        "continuity": "preserve",
+        "carryFromTaskId": "reserve-space"
+      },
+      "completionMode": "participant",
+      "successCriterion": {
+        "all": [
+          {
+            "event": {
+              "type": "action",
+              "actionId": "reservation-cancelled",
+              "where": {
+                "ok": true
+              }
+            }
+          },
+          {
+            "state": {
+              "reservationCancelled": true
+            }
+          }
+        ]
+      },
+      "manualReview": false,
+      "allowSelfReportedCompletion": true,
+      "allowGiveUp": true,
+      "timing": {
+        "excludeScreens": []
+      },
+      "postTaskQuestions": [
+        {
+          "questionId": "ease",
+          "type": "scale",
+          "prompt": "Como foi realizar esta tarefa?",
+          "min": 1,
+          "max": 7,
+          "minLabel": "Muito difícil",
+          "maxLabel": "Muito fácil",
+          "required": false
+        },
+        {
+          "questionId": "comment",
+          "type": "text",
+          "prompt": "Algo dificultou ou ajudou? Não informe dados pessoais.",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "visual": {
+    "enabled": true,
+    "heatmaps": true,
+    "replay": true,
+    "captureSchemaVersion": "1",
+    "rendererBundleId": "rooms-renderer-r1",
+    "rendererBundle": "replay/rooms-r1.html",
+    "privacy": {
+      "textPolicy": "static-allowlist",
+      "staticTextAllowlist": [
+        "Salas",
+        "Minhas reservas",
+        "Encontre seu espaço.",
+        "Espaços para boas conversas.",
+        "14:00 — 15:00",
+        "6 pessoas",
+        "4 pessoas",
+        "10 pessoas",
+        "Vídeo e tela",
+        "Tela",
+        "Luz",
+        "Pátio",
+        "Horizonte",
+        "Uma mesa, boas ideias.",
+        "Conforto para conversas menores.",
+        "Espaço para reunir a equipe.",
+        "1º andar",
+        "2º andar",
+        "Ver sala",
+        "Reservar esta sala",
+        "Voltar",
+        "Sua próxima reunião.",
+        "Título da reunião (opcional)",
+        "Dê um título fictício",
+        "Confirmar reserva",
+        "Reserva confirmada",
+        "Seu espaço está reservado.",
+        "Ver minhas reservas",
+        "Cancelar reserva",
+        "Liberar este espaço?",
+        "A reserva será cancelada e a sala ficará disponível.",
+        "Manter reserva",
+        "Sim, cancelar",
+        "Reserva cancelada",
+        "O espaço está livre novamente.",
+        "Ver salas",
+        "Nenhuma reserva por aqui.",
+        "Campo ocultado",
+        "Selecionada",
+        "Disponível",
+        "A reserva já foi cancelada.",
+        "Detalhes",
+        "Nome fictício da reunião",
+        "ENCONTRE SEU ESPAÇO",
+        "6 pessoas · Vídeo e tela",
+        "4 pessoas · Tela",
+        "10 pessoas · Vídeo e tela",
+        "Salas",
+        "Amanhã (exemplo)"
+      ],
+      "maskSelectors": [
+        "[data-user-content]"
+      ],
+      "excludeSelectors": [
+        "[data-research-exclude]"
+      ],
+      "allowedClasses": [
+        "active",
+        "brand",
+        "cancel",
+        "center",
+        "confirm-panel",
+        "detail-list",
+        "eyebrow",
+        "field",
+        "link",
+        "masked",
+        "primary",
+        "product-header",
+        "product-nav",
+        "prototype-root",
+        "room-card",
+        "room-copy",
+        "room-hero",
+        "room-horizonte",
+        "room-list",
+        "room-luz",
+        "room-meta",
+        "room-patio",
+        "room-plan",
+        "schedule",
+        "secondary",
+        "space",
+        "status-icon",
+        "summary"
+      ],
+      "allowedIds": [
+        "product"
+      ]
+    },
+    "limits": {
+      "maxFrames": 600,
+      "maxPoints": 3000,
+      "maxTreeBytes": 8388608
+    }
+  },
+  "analysis": {
+    "unit": "first-started-attempt-per-session-task",
+    "primarySuccessNumerator": "observed_success",
+    "primarySuccessDenominator": "all-started-attempts",
+    "timeMetric": "visibleExecutionMs",
+    "timePopulation": "observed_success-with-complete-duration",
+    "excludePilot": true
+  },
+  "participant": {
+    "welcomeTitle": "Vamos testar a reserva de salas?",
+    "contextNote": "Cenário fictício: amanhã, das 14h às 15h."
+  },
+  "runtimeProfile": "starter-1"
+}

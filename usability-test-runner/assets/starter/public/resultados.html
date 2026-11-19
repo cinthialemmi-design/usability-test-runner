@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resultados do estudo</title><link rel="stylesheet" href="/runner.css">
+</head>
+<body>
+  <header class="lab-header"><a href="/" class="lab-brand">Resultados</a><button id="logout" hidden>Sair</button></header>
+  <main class="report-layout">
+    <p id="report-status" class="note" role="status" aria-live="polite"></p>
+    <section id="login-panel" class="login-panel" hidden>
+      <h1>Acesso da equipe</h1><p>Use a chave privada definida pela pessoa responsável por esta instalação.</p>
+      <form id="login-form"><label>Chave de acesso<input id="researcher-token" type="password" autocomplete="current-password" required></label><button class="primary">Entrar</button></form>
+    </section>
+    <div id="results-panel" hidden>
+      <div class="report-head"><div><h1 id="report-title">Resultados</h1><p id="report-environment"></p></div><div class="report-actions"><button id="refresh">Atualizar</button><button id="export-json">JSON</button><button id="export-csv">CSV</button></div></div>
+      <div id="report"></div>
+      <section id="heat-section" class="report-section" hidden>
+        <h2>Onde as pessoas tocaram</h2>
+        <p class="note">Pontos recebidos, agrupados por conteúdo, tamanho e rolagem compatíveis. O mapa não mede olhar ou atenção.</p>
+        <div class="visual-controls"><label>Tarefa<select id="heat-task"></select></label><label>Tela<select id="heat-screen"></select></label><label>Participação<select id="heat-session"></select></label><button id="load-heat">Carregar mapa</button></div>
+        <label>Visualização <select id="heat-group"></select></label><p id="heat-status" class="note" role="status"></p>
+        <div id="heat-stage" class="visual-surface" hidden><iframe title="Captura com mapa de cliques" sandbox="allow-scripts"></iframe></div>
+      </section>
+      <section class="report-section"><h2>Participações</h2><div id="sessions"></div><nav class="report-pagination" aria-label="Páginas de participações"><button id="page-prev">Anterior</button><span id="page-status"></span><button id="page-next">Próxima</button></nav></section>
+      <section id="replay-section" class="report-section" hidden>
+        <h2 id="replay-title">Replay visual</h2>
+        <p class="note">Reconstrução das capturas, sem vídeo ou execução das operações. Intervalos sem novas capturas permanecem na linha do tempo.</p>
+        <div class="player-controls"><button id="replay-play">Reproduzir</button><button id="replay-prev">Anterior</button><button id="replay-next">Próxima</button><label>Velocidade <select id="replay-speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label>Tarefa <select id="replay-task"></select></label><input id="replay-time" aria-label="Posição na reprodução" type="range" min="0" max="100" value="0"></div>
+        <p id="replay-status" class="note" role="status"></p>
+        <div id="replay-stage" class="visual-surface"><iframe title="Reprodução visual da participação" sandbox="allow-scripts"></iframe></div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="/results.mjs"></script>
+</body>
+</html>

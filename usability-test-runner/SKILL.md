@@ -9,6 +9,14 @@ description: Use when a user wants an end-to-end hosted usability study for edit
 
 Quando invocada para construir um estudo, implemente e conecte essas partes; não entregue apenas um protótipo, configuração ou plano. Planejamento, prévia local ou importação manual são entregas finais somente quando o usuário pedir esse escopo. Instalar a skill não concede acesso a contas, serviços ou credenciais.
 
+## Base executável incluída
+
+Use [assets/starter](assets/starter/README.md) como implementação de referência: participante, receptor, SQLite, painel privado, mapas e replay. Copie para um projeto próprio; não execute pesquisas dentro da pasta instalada da skill. Leia [starter.md](references/starter.md) para adaptar o código, conhecer as capacidades implementadas e escolher a integração com a infraestrutura disponível.
+
+A referência separa `study.config.json` e `public/prototype/` dos componentes do motor. Ela usa Node.js 24+ e SQLite, com uma variante fixa e uma instalação por estudo/revisão/ambiente. O contrato portátil é mais amplo que este primeiro perfil: randomização, conclusão automática e assets visuais adicionais precisam de extensão explícita. Não prometa uma capacidade apenas porque há um campo de configuração.
+
+A referência inclui uma lista explícita de verificações de execução ainda pendentes nesta versão; a presença de código não equivale a coleta conectada verificada. Em cada tarefa, siga o escopo e as autorizações atuais do usuário.
+
 ## 1. Entender e configurar o estudo
 
 Inspecione o projeto antes de perguntar. Reaproveite objetivo, público, audiência do link e serviços já informados; esclareça apenas o que muda a implementação ou depende da decisão do usuário.
@@ -27,7 +35,7 @@ Defina onde cada componente roda, onde os dados ficam e como participantes e pes
 
 ## 3. Construir o sistema completo
 
-Leia [connected-system.md](references/connected-system.md) para interfaces, persistência, painel e ordem de integração.
+Leia [connected-system.md](references/connected-system.md) para interfaces, persistência, painel e ordem de integração. Reaproveite os componentes da base incluída quando forem compatíveis com o projeto; adapte o receptor quando a infraestrutura existente exigir.
 
 | Parte | Implementar |
 |---|---|

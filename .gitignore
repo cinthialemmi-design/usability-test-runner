@@ -3,3 +3,9 @@ __pycache__/
 *.pyc
 .env
 .env.*
+!.env.example
+node_modules/
+**/dist/
+**/.data/
+*.sqlite
+*.sqlite-*

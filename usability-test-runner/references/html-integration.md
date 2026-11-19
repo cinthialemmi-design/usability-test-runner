@@ -1,6 +1,6 @@
 # Integração com o protótipo HTML
 
-Leia antes de adaptar telas, navegação e detecção de conclusão. Estes são contratos a implementar no projeto; esta skill não inclui um SDK ou aplicativo pronto. O adaptador e os catálogos seguem [project-contract.md](project-contract.md).
+Leia antes de adaptar telas, navegação e detecção de conclusão. Estes são contratos a implementar no projeto. A [base incluída](starter.md) fornece motor e um adaptador de salas como referência executável; substitua o adaptador para integrar outro HTML. O adaptador e os catálogos seguem [project-contract.md](project-contract.md).
 
 ## Inspecionar e escolher a integração
 

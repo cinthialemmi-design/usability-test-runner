@@ -1,6 +1,6 @@
 # Contrato portátil de projeto — versão 2
 
-Leia para gerar/adaptar um estudo sem incorporar regras de um produto no motor. O exemplo JSON é configuração ilustrativa; não contém protótipo, assets ou adaptador implementados. O validador usa somente Python padrão.
+Leia para gerar/adaptar um estudo sem incorporar regras de um produto no motor. O arquivo assets/study.example.json é configuração ilustrativa; a [base executável separada](starter.md) inclui sua própria configuração, protótipo e adaptador implementados. O validador usa somente Python padrão.
 
 A execução padrão constrói o sistema conectado de [connected-system.md](connected-system.md), com infraestrutura escolhida conforme [infrastructure.md](infrastructure.md). O exemplo em modo preview é um apoio de configuração; esse modo não substitui o alvo de publicação/coleta quando o usuário não restringiu o escopo.
 

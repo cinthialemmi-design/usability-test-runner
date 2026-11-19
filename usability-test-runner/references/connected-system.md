@@ -1,5 +1,7 @@
 # Construir o sistema conectado
 
+A [base executável](starter.md) já fornece uma referência destas partes. Adapte-a quando a infraestrutura e o perfil suportado forem compatíveis.
+
 Leia ao executar o escopo padrão da skill. Entregue participante, receptor, armazenamento e área privada de resultados conectados entre si. Este documento orienta implementação; não presume serviços ou software já provisionados.
 
 ## 1. Contratos e ordem de integração

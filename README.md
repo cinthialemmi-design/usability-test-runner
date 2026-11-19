@@ -2,7 +2,24 @@
 
 Skill para orientar o Codex a construir e conectar sistemas completos de testes de usabilidade de protótipos HTML no celular: participante, recebimento de respostas, armazenamento, painel privado, mapas de cliques e replay visual.
 
-A entrega padrão ao usar a skill é um link hospedado com coleta centralizada e painel funcionando. A prévia local serve para conferir o estudo. A skill contém as instruções e contratos para construir, conectar e publicar os componentes; instalar a skill não cria acesso a contas, serviços ou credenciais.
+A entrega padrão ao usar a skill é um link hospedado com coleta centralizada e painel funcionando. A prévia local serve para conferir o estudo. A skill inclui instruções, contratos e uma base executável reutilizável para construir, conectar e publicar os componentes; instalar a skill não cria acesso a contas, serviços ou credenciais.
+
+## Base funcional incluída
+
+O pacote agora inclui [um projeto de referência completo](usability-test-runner/assets/starter/README.md), com:
+
+- Participante com consentimento, tarefas, perguntas, pausa e retomada.
+- Recebimento com confirmação, reenvios sem duplicação e banco SQLite persistente.
+- Painel privado com resultados, avaliação humana, paginação, exclusão e exportação CSV/JSON.
+- Mapas por tarefa, tela, participação e visualização compatível.
+- Replay isolado com reprodução, pausa, velocidade e linha do tempo.
+- Configuração e adaptador de produto separados do motor; reserva de salas como exemplo substituível.
+
+A referência usa Node.js 24+, sem dependências externas, e inclui migrações, configuração de ambiente e Dockerfile. Copie `usability-test-runner/assets/starter/` para seu projeto e siga seu README. Hospedagem do receptor requer servidor e armazenamento persistente; GitHub Pages sozinho não atende a coleta.
+
+**Estado desta atualização: implementação preparada; execução e validação pendentes.** Por solicitação do usuário, não foram iniciados testes, servidor ou novo piloto. O código publicado não deve ser confundido com um estudo hospedado ou coleta verificada. Consulte a [lista pendente](usability-test-runner/assets/starter/docs/verification-pending.md).
+
+O perfil inicial suporta uma variante fixa e uma instalação por estudo/revisão/ambiente. Randomização, conclusão automática, imagens/fontes, ponte entre origens e multiestudo exigem extensão explícita; veja [capacidades e limites](usability-test-runner/assets/starter/README.md#perfil-implementado-e-limites).
 
 ## Instalar no Codex
 
@@ -45,7 +62,7 @@ O replay não é vídeo. Mapas de cliques não medem olhar ou atenção. Captura
 
 ## Configuração de exemplo
 
-O arquivo [`study.example.json`](usability-test-runner/assets/study.example.json) usa um estudo fictício de reserva de salas. Ele está em modo de prévia, com dados de piloto, porque não tem serviços conectados; isso não altera o padrão de entrega conectada. Os caminhos do protótipo são ilustrativos; a configuração não contém um aplicativo implementado.
+O arquivo [`study.example.json`](usability-test-runner/assets/study.example.json) usa um estudo fictício de reserva de salas. Ele está em modo de prévia, com dados de piloto, porque não tem serviços conectados; isso não altera o padrão de entrega conectada. Os caminhos do protótipo são ilustrativos; a configuração isolada não contém um aplicativo implementado. O projeto executável e sua configuração completa ficam em `assets/starter/`.
 
 A configuração usa o contrato versão 2. Projetos anteriores exigem migração explícita. Atualizar a skill não altera pesquisas já publicadas nem ativa captura retroativa.
 
@@ -67,6 +84,8 @@ usability-test-runner/
 ├── SKILL.md
 ├── agents/
 ├── assets/
+│   ├── study.example.json
+│   └── starter/              # implementação de referência
 ├── references/
 └── scripts/
 ```
@@ -75,4 +94,10 @@ Comece por [`SKILL.md`](usability-test-runner/SKILL.md). As referências detalha
 
 ## Dados e serviços
 
-Este repositório contém apenas a skill, exemplos neutros e verificadores. Hospedagem, armazenamento, credenciais, autorização, consentimento e retenção são configurados em cada projeto. Resultados de participantes e segredos de projetos não fazem parte do pacote.
+Este repositório contém a skill, uma implementação de referência, exemplos neutros e verificadores. Hospedagem, armazenamento, credenciais, autorização, consentimento e retenção são configurados em cada projeto. Resultados de participantes e segredos de projetos não fazem parte do pacote.
+
+## Origem e licença
+
+A proposta de reutilizar um visualizador de protótipos como ponto de partida foi inspirada em [prototype-viewer / brand-prototype-viewer, de Apparicio Bueno](https://github.com/appariciojunior/prototype-viewer). O motor de pesquisa, receptor e painel incluídos aqui foram desenvolvidos para este projeto; a inspiração não indica autoria ou endosso da plataforma de pesquisa pelo projeto original.
+
+Código e documentação deste repositório são distribuídos sob a [licença MIT](LICENSE). Veja os [créditos](THIRD_PARTY_NOTICES.md).
