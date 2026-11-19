@@ -5,3 +5,6 @@
 dist/
 node_modules/
 *.sqlite*
+
+# Private design provenance; never part of participant assets.
+design-source.local.json

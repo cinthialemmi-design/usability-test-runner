@@ -2,6 +2,8 @@
 
 Esta atualização foi feita com proibição explícita de retomar testes. Nenhuma caixa abaixo está concluída e não foi iniciado servidor, navegador ou piloto. Use esta lista quando a execução for autorizada.
 
+- [ ] Entrada Figma, quando usada: acesso real, frames corretos, recursos locais e interações implementadas estão documentados; origem e hipóteses não aparecem no JSON público.
+- [ ] Fidelidade Figma, quando usada: comparar HTML renderizado no dispositivo alvo e percorrer as tarefas, sem confundir screenshot do design com verificação do produto.
 - [ ] Janela: produto de largura fixa em janela grande mantém os mesmos breakpoints e unidades `vw/vh` no replay.
 - [ ] Recorte: rolagem da página, produto parcialmente visível, teclado e orientação preservam origem/área visível sem deslocar pontos.
 - [ ] Agrupamento: mesma raiz/árvore com janelas ou recortes diferentes gera grupos visuais distintos; recorte informado pelo cliente é recalculado pelo servidor.

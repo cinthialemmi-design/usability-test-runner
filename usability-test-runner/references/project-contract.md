@@ -18,7 +18,7 @@ Nenhuma regra do domínio deve entrar no coletor, renderizador ou agregador. Nã
 
 ## Configuração e adaptador
 
-`schemaVersion: "2"` identifica este contrato. `brand` referencia um bundle imutável de tokens, fontes, CSS e assets aprovados. A origem pode ser o próprio HTML existente; não invente outra marca para aplicar o motor.
+`schemaVersion: "2"` identifica este contrato. `brand` referencia um bundle imutável de tokens, fontes, CSS e assets aprovados. A origem pode ser o próprio HTML existente ou recursos extraídos do design Figma acessível; não invente outra marca para aplicar o motor. O contrato atual usa `brand.source: "assets"` ou `"prototype"`; não adicione um valor `"figma"`. Links/nós de origem e hipóteses de interação ficam em registro de projeto fora do JSON público, conforme [figma-to-html.md](figma-to-html.md).
 
 `prototype` contém `rootSelector`, caminho do adaptador e catálogo `{screenId, label}`. `allowedStateKeys`, `allowedActionIds` e `allowedEventFields` são listas explícitas de valores semânticos que podem participar de critérios e eventos. Permitir um campo no critério não autoriza capturar texto pessoal; o adaptador retorna somente valores aprovados e necessários.
 

@@ -1,13 +1,14 @@
 # usability-test-runner
 
-Skill para orientar o Codex a construir e conectar sistemas completos de testes de usabilidade de protótipos HTML no celular: participante, recebimento de respostas, armazenamento, painel privado, mapas de cliques e replay visual.
+Skill para orientar o Codex a transformar telas de um link do Figma em protótipo HTML navegável, ou usar HTML existente, e construir o sistema completo de teste de usabilidade no celular: participante, recebimento de respostas, armazenamento, painel privado, mapas de cliques e replay visual.
 
 A entrega padrão ao usar a skill é um link hospedado com coleta centralizada e painel funcionando. A prévia local serve para conferir o estudo. A skill inclui instruções, contratos e uma base executável reutilizável para construir, conectar e publicar os componentes; instalar a skill não cria acesso a contas, serviços ou credenciais.
 
 ## Base funcional incluída
 
-O pacote agora inclui [um projeto de referência completo](usability-test-runner/assets/starter/README.md), com:
+O pacote reúne instruções de implementação e [um projeto de referência completo](usability-test-runner/assets/starter/README.md), com:
 
+- Orientação para entrada por link do Figma, leitura do design, implementação HTML e integração ao estudo.
 - Participante com consentimento, tarefas, perguntas, pausa e retomada.
 - Recebimento com confirmação, reenvios sem duplicação e banco SQLite persistente.
 - Painel privado com resultados, avaliação humana, paginação, exclusão e exportação CSV/JSON.
@@ -35,9 +36,23 @@ Para instalar manualmente, baixe o repositório e copie a pasta `usability-test-
 
 ## Usar
 
-> Use $usability-test-runner com meu protótipo HTML para preparar um teste no celular, incluindo tarefas, critérios configuráveis, coleta, mapas de cliques e replay visual.
+> Use $usability-test-runner com meu link do Figma para transformar as telas em protótipo HTML navegável e preparar o teste completo no celular, com tarefas, critérios, coleta, painel privado, mapas e replay.
 
-Forneça o HTML ou seu projeto editável, o objetivo da pesquisa e o público. A skill ajuda a definir as tarefas e critérios e a identificar as conexões de hospedagem e armazenamento necessárias.
+Também funciona com HTML existente:
+
+> Use $usability-test-runner com meu protótipo HTML para preparar o estudo completo, preservando sua interface e marca.
+
+Forneça um link do Figma com acesso às telas, ou os arquivos HTML/projeto editável, além do objetivo da pesquisa e do público. Se o arquivo tiver muitos fluxos, indique os frames ou o percurso de interesse. A skill orienta o Codex a ler a fonte, construir as interações necessárias, propor tarefas/critérios e conectar a infraestrutura disponível.
+
+## Partindo do Figma
+
+O fluxo é: **link acessível → contexto das telas e recursos → HTML navegável → adaptador e configuração → participante, coleta, painel, mapas e replay**. A integração Figma disponível fornece a leitura do arquivo; instalar a skill não cria essa conexão ou permissão.
+
+A conversão é realizada pelo Codex durante a implementação. O servidor do starter recebe HTML editável e não exige credenciais Figma no navegador. As imagens do design são referência visual; as telas do produto são construídas em HTML, com navegação e estados, em vez de usar screenshots como aplicativo.
+
+Comportamentos ausentes no design são tratados como hipóteses identificadas. Origem das telas, nós usados, interações e pendências ficam em um registro de projeto fora da configuração pública. Se faltar acesso, a entrega indica a conexão/permissão ou link específico necessário e avança nas partes independentes.
+
+Leia o [fluxo Figma → HTML](usability-test-runner/references/figma-to-html.md). A base continua no perfil `starter-3`: esta atualização amplia a entrada e as instruções da skill, preservando o contrato do runtime. Como solicitado, essa ampliação não foi exercitada com um arquivo Figma, build ou teste de execução.
 
 ## Infraestrutura e entrega
 
@@ -51,6 +66,7 @@ Leia os guias de [infraestrutura](usability-test-runner/references/infrastructur
 
 ## Capacidades
 
+- Leitura de telas Figma acessíveis e construção de HTML com marca, navegação, estados e dados fictícios.
 - Experiência do participante com consentimento, instruções, tarefas, pausa, respostas e encerramento.
 - Marca, assets, telas, variantes, cenários, perguntas e critérios configuráveis por projeto.
 - Separação entre conclusão observada, declaração do participante e avaliação humana.
@@ -94,7 +110,7 @@ usability-test-runner/
 └── scripts/
 ```
 
-Comece por [`SKILL.md`](usability-test-runner/SKILL.md). As referências detalham planejamento, integração HTML, configuração portátil, coleta, captura visual, mapas, replay e verificação antes da distribuição.
+Comece por [`SKILL.md`](usability-test-runner/SKILL.md). As referências detalham conversão Figma → HTML, planejamento, integração HTML, configuração portátil, coleta, captura visual, mapas, replay e verificação antes da distribuição.
 
 ## Dados e serviços
 

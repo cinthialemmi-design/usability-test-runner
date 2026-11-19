@@ -1,4 +1,4 @@
 interface:
-  display_name: "Teste de usabilidade mobile"
-  short_description: "Estudos hospedados com coleta, painel, mapas e replay"
-  default_prompt: "Use $usability-test-runner para construir e conectar um estudo do meu protótipo HTML no celular, com link hospedado, tarefas, armazenamento, painel privado, mapas de cliques e replay."
+  display_name: "Teste de usabilidade · Figma e HTML"
+  short_description: "Do Figma ou HTML ao estudo com coleta, mapas e replay"
+  default_prompt: "Use $usability-test-runner com meu link do Figma ou protótipo HTML para construir o produto navegável e preparar o estudo completo no celular, com tarefas, coleta centralizada, painel privado, mapas e replay."

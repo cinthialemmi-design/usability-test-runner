@@ -28,6 +28,14 @@ O servidor prepara o pacote visual, aplica as migrações e cria o banco em `.da
 
 Esta inicialização futura não substitui a verificação de ponta a ponta. Consulte [as verificações pendentes](docs/verification-pending.md) antes de receber participantes reais.
 
+## Partir de um link do Figma
+
+Ao usar a skill, o Codex pode começar por telas Figma acessíveis e construir o conteúdo de `public/prototype/` antes de conectar o estudo. O HTML precisa ter interações e estados implementados; o runtime não importa um player Figma nem usa sua screenshot como aplicativo.
+
+A leitura depende da integração e da permissão no arquivo. Telas, recursos e comportamentos inferidos são registrados no projeto; não inclua links privados ou credenciais Figma na configuração pública. Para essa rastreabilidade, `design-source.local.json` fica fora de `public/` e é ignorado no Git. A versão de captura e o perfil do runtime não mudam por a origem ser Figma.
+
+A implementação do fluxo está descrita na referência `figma-to-html.md` da skill. Nesta atualização não houve conversão de um arquivo real nem execução de testes.
+
 ## Adaptar para outro projeto
 
 | Arquivo | O que mudar |

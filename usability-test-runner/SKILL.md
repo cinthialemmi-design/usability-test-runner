@@ -1,9 +1,11 @@
 ---
 name: usability-test-runner
-description: Use when a user wants an end-to-end hosted usability study for editable HTML prototypes on mobile, with tasks, reliable response collection, centralized storage, private results, click heatmaps or participant-only visual replay. Applies to brand-prototype-viewer output and other editable web prototypes; excludes native app binaries and uninstrumented external embeds.
+description: Use when preparing an end-to-end usability study from a Figma design link or an editable HTML prototype, including interactive HTML implementation, participant tasks, centralized collection, private results, click maps and visual replay. Excludes native binaries and observation inside uninstrumented external embeds.
 ---
 
-# Sistema de testes de usabilidade HTML no celular
+# Teste de usabilidade a partir de Figma ou HTML
+
+A entrada pode ser **um link do Figma ou HTML editável**. Partindo de Figma, implemente primeiro as telas como produto HTML navegável, preserve a marca e conecte esse produto à pesquisa. O usuário não precisa fornecer HTML previamente.
 
 **A entrega padrão é um sistema conectado:** link hospedado para o participante, serviço que recebe sessões/respostas, armazenamento persistente e painel privado com resultados e exportação. Mapas e replay visual fazem parte do escopo padrão para HTML editável. A prévia local é uma etapa de conferência, não o encerramento normal do trabalho.
 
@@ -17,11 +19,21 @@ A referência separa `study.config.json` e `public/prototype/` dos componentes d
 
 A referência inclui uma lista explícita de verificações de execução ainda pendentes nesta versão; a presença de código não equivale a coleta conectada verificada. Em cada tarefa, siga o escopo e as autorizações atuais do usuário.
 
+## 0. Escolher a entrada
+
+| Material recebido | Caminho |
+|---|---|
+| Link Figma com fonte acessível | Ler [figma-to-html.md](references/figma-to-html.md), obter contexto das telas e implementar o produto HTML antes de instrumentar |
+| HTML/projeto editável, inclusive brand-prototype-viewer | Preservar a interface e integrar o estudo diretamente |
+| Somente player/embed externo sem fonte | Identificar o acesso que falta e preparar as partes independentes; não prometer coleta interna desse embed |
+
+Use primeiro objetivo, fluxo e dispositivo já informados. Para Figma, consulte as ferramentas disponíveis e o acesso real; siga a orientação de design-to-code da integração antes das chamadas que a exigem. Defina telas e interações a partir da fonte, registrando hipóteses quando o design não especificar o comportamento. A conversão não altera o arquivo Figma original.
+
 ## 1. Entender e configurar o estudo
 
 Inspecione o projeto antes de perguntar. Reaproveite objetivo, público, audiência do link e serviços já informados; esclareça apenas o que muda a implementação ou depende da decisão do usuário.
 
-Preserve o HTML original e sua marca. De **brand-prototype-viewer**, reaproveite tokens, assets, componentes, navegação e limpeza de telas. Retire da experiência de pesquisa as justificativas, dicas, seletor livre de versões e moldura de celular no aparelho real. Não herde quantidade de tarefas, regras de negócio ou cenários de outro projeto. O próprio HTML pode fornecer a referência visual.
+Preserve o HTML original e sua marca. De **brand-prototype-viewer**, reaproveite tokens, assets, componentes, navegação e limpeza de telas. Retire da experiência de pesquisa as justificativas, dicas, seletor livre de versões e moldura de celular no aparelho real. Não herde quantidade de tarefas, regras de negócio ou cenários de outro projeto. O próprio HTML ou as telas Figma acessíveis podem fornecer a referência visual. Na entrada Figma, gere o adaptador e os catálogos do novo produto, sem conservar os do exemplo de salas.
 
 Leia [project-contract.md](references/project-contract.md) para configuração/adaptador e [study-design.md](references/study-design.md) para tarefas e perguntas. Marca, telas, variantes, cenários, critérios, regras de tempo e limites visuais pertencem à configuração. O motor permanece independente do domínio.
 
@@ -69,4 +81,4 @@ Se faltar hospedagem, banco, credencial ou permissão, conclua a implementação
 
 ## Limites
 
-A skill orienta construção e conexão, mas não cria autorização ou credenciais indisponíveis. Vídeo/áudio/câmera, captura de outros aplicativos, app nativo, Figma sem ponte de eventos, recrutamento e inferência estatística exigem outro escopo. Mapas não medem olhar/atenção; replay não comprova compreensão.
+A skill orienta construção e conexão, mas não cria autorização ou credenciais indisponíveis. Vídeo/áudio/câmera, captura de outros aplicativos, app nativo, recrutamento e inferência estatística exigem outro escopo. Links Figma com fonte acessível são entrada para construção HTML; observar dentro de um player/embed Figma sem instrumentação continua fora da coleta suportada. Mapas não medem olhar/atenção; replay não comprova compreensão.

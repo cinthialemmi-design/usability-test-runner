@@ -6,12 +6,13 @@ Leia antes de adaptar telas, navegação e detecção de conclusão. Estes são 
 
 | Material disponível | Abordagem |
 |---|---|
+| Link Figma com acesso ao design | Seguir [figma-to-html.md](figma-to-html.md), construir o HTML navegável e então integrar os eventos |
 | Fontes HTML/CSS/JS editáveis | Copiar para uma versão de pesquisa; instrumentar ações e montagem existentes |
 | HTML único já compilado | Preservar o original e acrescentar uma camada de eventos na cópia; evitar reescrever a interface |
 | URL própria com acesso ao código | Instalar adaptador no site e conectar ao estudo, na mesma origem ou por mensagens |
 | URL externa sem acesso ao código | Não há observação interna garantida; oferecer tarefa e autorrelato com a limitação explícita |
 
-Não contorne restrições de iframe ou autenticação. Um iframe externo, Figma ou outra origem não dá acesso livre ao DOM, aos cliques ou ao estado interno. Reconstrução visual depende de acesso à raiz e do contrato de captura; vídeo de tela não faz parte da base.
+Não contorne restrições de iframe ou autenticação. Um iframe externo, um player Figma ou outra origem não dá acesso livre ao DOM, aos cliques ou ao estado interno. Reconstrução visual depende de acesso à raiz e do contrato de captura; vídeo de tela não faz parte da base. A entrada por link de design Figma é convertida em HTML próprio antes dessa captura.
 
 ## Separar três camadas
 

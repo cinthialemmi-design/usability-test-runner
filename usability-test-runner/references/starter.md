@@ -4,6 +4,8 @@ Leia ao construir um estudo novo ou quando precisar de código para participante
 
 A base está em [assets/starter](../assets/starter/README.md). Copie-a para um projeto independente antes de adaptar; não grave dados de pesquisa dentro da skill. O exemplo de salas é substituível e não é o motor universal do produto.
 
+Se a entrada for um link do Figma, siga [figma-to-html.md](figma-to-html.md) para obter a fonte e construir `public/prototype/`, seu adaptador e catálogos. A base não abre o player Figma como substituto do produto instrumentado.
+
 ## Escolher a integração
 
 Se a infraestrutura disponível suporta um servidor Node.js com volume persistente, use a referência Node.js 24+ e SQLite. O empacotamento de CSS usa dependências com versões fixadas; prepare-as com `npm ci --ignore-scripts` quando a execução for autorizada. O [README da base](../assets/starter/README.md) contém inicialização, variáveis e empacotamento Docker. Se o projeto já usa outro receptor/banco/autenticação, adapte os componentes a ele; preserve os contratos e não imponha migração de infraestrutura sem necessidade.
